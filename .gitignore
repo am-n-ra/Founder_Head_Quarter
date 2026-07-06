@@ -1,0 +1,6 @@
+# Ignore hot.md (session state) everywhere
+**/hot.md
+
+# But keep founder-profile.yaml tracked (backed up to personal repo)
+# Founder profile is personal but NOT ignored in the root FHQ3.0/ repo
+# (It IS ignored in shared venture repos via their own .gitignore)
