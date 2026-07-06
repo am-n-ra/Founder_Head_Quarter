@@ -55,20 +55,54 @@ The case library now covers two tiers: **pre-seed** (001-020, verified company-b
 
 ## Trigger & Detection
 
-`fhq` or `f` at the start of a message activates full FHQ3.0 mode. Without it, the skill is passive.
+The skill is activated by venture-related language in the user query. `fhq` or `f` at the start of a message signals explicit FHQ3.0 mode. Without a prefix, the skill infers from context (venture words like "boite", "startup", "cofondateur", "vente", "pivot", etc.).
 
-| Pattern | Action |
-|---------|--------|
-| `fhq` (alone) | Diagnose current venture, show status, next step |
-| `fhq <natural language>` | Parse intent, act accordingly |
-| `f <message>` | Same as fhq, shorthand |
+### Activation Priority
 
-The skill parses NATURAL LANGUAGE — no subcommands to learn:
-- "fhq je veux lancer une boite" → Onboarding or new venture
-- "fhq dis a Alice que..." → Async message
-- "fhq on avait decidé quoi sur le pricing ?" → Decision retrieval
-- "fhq nouveau produit" → Add product to active venture
-- "fhq" → Status: current phase, metrics, next action
+| # | Signal | Mode | Behavior |
+|---|--------|------|----------|
+| 1 | Message starts with `fhq` or `f ` (prefix) | **Explicit** | Route through Intent Table below. The prefix IS the trigger — route even if no other venture keywords present. |
+| 2 | Message contains venture keywords without prefix | **Implicit** | Scan for intent keywords. If match is confident (>80%), route as if prefixed. If uncertain, ask "Je détecte un sujet venture — tu veux que j'active FHQ3.0 ?" |
+| 3 | Neither prefix nor keywords | **Passive** | Answer normally. Skill is inert. |
+
+### Intent Routing Table (Explicit Mode)
+
+After detecting `fhq`/`f` prefix, match the first applicable pattern in THIS priority order:
+
+| Priority | Intent | Match patterns | Action |
+|----------|--------|---------------|--------|
+| P0 | **Async message** | `dis a`, `dis à`, `repond a`, `répond à`, `message a`, `message à`, `dis @`, `répond @` | Route to Section 6 — write communication file, push |
+| P1 | **New venture / onboarding** | `je veux lancer`, `nouveau projet`, `nouvelle boite`, `onboarding`, `je commence`, `créer`, `nouvelle venture`, `importe`, `importe mon projet` | Route to Section 2 — Onboarding flow |
+| P2 | **Decision retrieval** | `on avait decidé`, `on avait décidé`, `quelle decision`, `qu'est-ce qu'on a decide`, `pourquoi on a choisi`, `décision du`, `decision du`, `rappelle moi` | Route to Section 11 — search decisions/ |
+| P3 | **Pivot / Persevere** | `pivot`, `on arrete`, `on arrête`, `abandonner`, `kill`, `est-ce que je continue` | Route to Section 17 — Pivot-or-Persevere Protocol |
+| P4 | **Add product** | `nouveau produit`, `ajoute un produit`, `nouveau module` | Add product to active venture |
+| P5 | **Add co-founder** | `avec <name>`, `nouveau cofondateur`, `nouveau collaborateur`, `ajoute <name>` | Route to Section 9 — Multi-Founder Protocol |
+| P6 | **Status / diagnostics** | `fhq` (alone, no other keywords) | Run diagnostics (Section 12) |
+| P7 | **General question** | Anything not matched above | Run full "Before Responding" sequence (phase diagnosis → contradiction check → write → respond) |
+
+### Disambiguation Rules
+
+If a message matches MULTIPLE intents (e.g., "fhq dis a Alice qu'on devrait pivoter"):
+1. **Async message** (P0) always wins — the communication is the primary action.
+2. If the message contains BOTH a question and a statement, the intent at the HIGHEST priority wins.
+3. If truly ambiguous: execute the highest-priority intent, then flag: "J'ai envoyé le message à Alice. Tu veux aussi qu'on parle du pivot ?"
+
+### Fallback
+
+If no intent matches confidently after the prefix: run full "Before Responding" sequence. The phase diagnosis and invariant check compensate for intent ambiguity.
+
+### Examples
+
+| User message | Intent | Route |
+|-------------|--------|-------|
+| `fhq` | Status | Section 12 |
+| `fhq je veux lancer une boite` | New venture | Section 2 |
+| `fhq dis a Alice que le pricing est pret` | Async message | Section 6 |
+| `fhq on avait decidé quoi sur le pricing ?` | Decision retrieval | Section 11 |
+| `fhq nouveau produit` | Add product | Active venture |
+| `fhq est-ce qu'on pivote ?` | Pivot/Persevere | Section 17 |
+| `fhq pourquoi le churn est si haut ?` | General question | Before Responding sequence |
+| `f repond a Bob: oui je suis d accord` | Async message (shorthand) | Section 6 |
 
 ---
 
