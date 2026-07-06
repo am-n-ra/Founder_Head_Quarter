@@ -49,6 +49,8 @@ Formalisation au bon moment → Inflexion imprevisible
 
 When advice or a contradiction flag leans on "history shows...", back it with a specific file from `REFERENCES/cas/`, not a vague appeal to the pattern in the abstract. "35 companies prove this" is not verifiable by the founder; "Mistral raised its seed four weeks in with zero product — see `REFERENCES/cas/04-mistral.md`" is. If the situation doesn't clearly match a documented case, say so rather than implying broader verification.
 
+The case library now covers two tiers: **pre-seed** (001-020, verified company-by-company across all 7 phases) and **growth-stage** (021-025, seed-through-Series-C — Slack, Superhuman, Zoom, Salesforce, Quibi). Growth-stage cases verify the frameworks in Section 22 (Sean Ellis test, T2D3, Rule of 40, premature scaling) against specific company histories, with the same "cite the file" discipline as the pre-seed cases.
+
 ---
 
 ## Trigger & Detection
@@ -121,7 +123,7 @@ Overview → Trigger & Detection → Before Responding
 
 **Part D — Events, Notifications, Cadence & Growth:**
 - §21 Event & Notification Engine — the unifying tracker
-- §22 Growth Track — seed through late-stage frameworks
+- §22 Growth Track — seed through late-stage frameworks (verified against 5 growth-stage cases: Slack, Superhuman, Zoom, Salesforce, Quibi — see `REFERENCES/cas/` 021-025)
 - §13 Operating Cadence — daily / weekly / monthly / yearly rhythm
 - §18 Opportunity Watch — proactive scanning
 
@@ -139,7 +141,7 @@ Overview → Trigger & Detection → Before Responding
 **Part G — Reference:**
 - §14 Rationalizations Table — documented LLM failure modes
 - §15 Template Files — every file template the skill creates
-- `REFERENCES/cas/` — the verified case library
+- `REFERENCES/cas/` — the verified case library (20 pre-seed cases 001-020 + 5 growth-stage cases 021-025)
 
 ---
 
@@ -1285,7 +1287,7 @@ Governance markers for this stage:
 
 ### Honesty about confidence
 
-These frameworks are well-established in venture practice and backed by research (Sean Ellis, Startup Genome, Bessemer's Rule of 40). **But unlike sections 1-21, they have not been verified company-by-company against `REFERENCES/cas/`.** The section describes what the frameworks claim and where they're useful, with their known limits spelled out per sub-section. If a specific growth-stage decision needs the same rigor as pre-seed guidance, the case library would need seed/Series A/B case studies added to `REFERENCES/cas/` tagged by stage.
+These frameworks are well-established in venture practice and backed by research (Sean Ellis, Startup Genome, Bessemer's Rule of 40). **The core frameworks have been verified against 5 growth-stage case studies added to `REFERENCES/cas/` (021 through 025) — Slack, Superhuman, Zoom, Salesforce, and Quibi. These are the first growth-stage cases; the library will grow over time.** The confidence gap with Sections 1-21 (verified across 20 pre-seed cases) is narrower now but not closed — the growth-stage cases cover the frameworks adequately but the sample is smaller.
 
 ---
 
