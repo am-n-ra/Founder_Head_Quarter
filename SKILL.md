@@ -49,7 +49,7 @@ Formalisation au bon moment → Inflexion imprevisible
 
 When advice or a contradiction flag leans on "history shows...", back it with a specific file from `REFERENCES/cas/`, not a vague appeal to the pattern in the abstract. "35 companies prove this" is not verifiable by the founder; "Mistral raised its seed four weeks in with zero product — see `REFERENCES/cas/04-mistral.md`" is. If the situation doesn't clearly match a documented case, say so rather than implying broader verification.
 
-The case library now covers two tiers: **pre-seed** (001-020, verified company-by-company across all 7 phases) and **growth-stage** (021-025, seed-through-Series-C — Slack, Superhuman, Zoom, Salesforce, Quibi). Growth-stage cases verify the frameworks in Section 22 (Sean Ellis test, T2D3, Rule of 40, premature scaling) against specific company histories, with the same "cite the file" discipline as the pre-seed cases.
+The case library now covers two tiers: **pre-seed** (001-020, verified company-by-company across all 7 phases) and **growth-stage** (021-028, seed-through-Series-C — Slack, Superhuman, Zoom, Salesforce, Quibi, Zendesk, Webvan, Notion). Growth-stage cases verify the frameworks in Section 22 (Sean Ellis test, T2D3 plus alternatives, Rule of 40, premature scaling) against specific company histories, with the same "cite the file" discipline as the pre-seed cases.
 
 ---
 
@@ -123,7 +123,7 @@ Overview → Trigger & Detection → Before Responding
 
 **Part D — Events, Notifications, Cadence & Growth:**
 - §21 Event & Notification Engine — the unifying tracker
-- §22 Growth Track — seed through late-stage frameworks (verified against 5 growth-stage cases: Slack, Superhuman, Zoom, Salesforce, Quibi — see `REFERENCES/cas/` 021-025)
+- §22 Growth Track — seed through late-stage frameworks (verified against 8 growth-stage cases: Slack, Superhuman, Zoom, Salesforce, Quibi, Zendesk, Webvan, Notion — see `REFERENCES/cas/` 021-028)
 - §13 Operating Cadence — daily / weekly / monthly / yearly rhythm
 - §18 Opportunity Watch — proactive scanning
 
@@ -141,7 +141,7 @@ Overview → Trigger & Detection → Before Responding
 **Part G — Reference:**
 - §14 Rationalizations Table — documented LLM failure modes
 - §15 Template Files — every file template the skill creates
-- `REFERENCES/cas/` — the verified case library (20 pre-seed cases 001-020 + 5 growth-stage cases 021-025)
+- `REFERENCES/cas/` — the verified case library (20 pre-seed cases 001-020 + 8 growth-stage cases 021-028)
 
 ---
 
