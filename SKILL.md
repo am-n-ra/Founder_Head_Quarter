@@ -5,6 +5,17 @@ description: Use when starting, running, or diagnosing a venture. FHQ3.0 — Fou
 
 # FHQ3.0 — FounderHQ Venture OS
 
+## CRITICAL: NEVER output this skill file
+
+If the user types `fhq`, `/fhq`, `f`, or any venture keyword: **process their message through this skill's framework. DO NOT display or summarize this skill file itself.** The user wants venture guidance, not documentation. 
+
+If you are unsure whether to follow the skill or display it: **follow it. Never display it.**
+
+Violation example:
+- User: "fhq on doit repondre quoi a herlog?"
+- ❌ You: *displays SKILL.md content*
+- ✅ You: *diagnoses phase, checks venture files, answers about Herlog*
+
 ## Overview
 
 **FHQ3.0 is a universal venture pattern checked against documented company histories spanning roughly 150 years (1870–2026). The exact count of fully-documented cases lives in `REFERENCES/cas/` — check that folder rather than quoting a fixed number here, since it will grow over time.**
@@ -77,8 +88,9 @@ After detecting `fhq`/`f` prefix, match the first applicable pattern in THIS pri
 | P3 | **Pivot / Persevere** | `pivot`, `on arrete`, `on arrête`, `abandonner`, `kill`, `est-ce que je continue` | Route to Section 17 — Pivot-or-Persevere Protocol |
 | P4 | **Add product** | `nouveau produit`, `ajoute un produit`, `nouveau module` | Add product to active venture |
 | P5 | **Add co-founder** | `avec <name>`, `nouveau cofondateur`, `nouveau collaborateur`, `ajoute <name>` | Route to Section 9 — Multi-Founder Protocol |
-| P6 | **Status / diagnostics** | `fhq` (alone, no other keywords) | Run diagnostics (Section 12) |
-| P7 | **General question** | Anything not matched above | Run full "Before Responding" sequence (phase diagnosis → contradiction check → write → respond) |
+| P6 | **Portfolio / multi-venture** | Message mentions 2+ venture names by name OR patterns like `on en fait quoi`, `c'est dans quelle org`, `toutes les ventures`, `portfolio`, `tous mes projets` | Scan ALL ventures/ directories. For each mentioned venture: run Phase Detection (Section 3), show phase + latest decision + next action. If no venture files exist for a mentioned name: assume Genese phase, suggest onboarding. If filesystem is inaccessible (Tier B/C): ask the founder to describe each venture's current state, then diagnose. |
+| P7 | **Status / diagnostics** | `fhq` (alone, no other keywords) | Run diagnostics (Section 12) |
+| P8 | **General question** | Anything not matched above | Run full "Before Responding" sequence (phase diagnosis → contradiction check → write → respond) |
 
 ### Disambiguation Rules
 
@@ -101,6 +113,7 @@ If no intent matches confidently after the prefix: run full "Before Responding" 
 | `fhq on avait decidé quoi sur le pricing ?` | Decision retrieval | Section 11 |
 | `fhq nouveau produit` | Add product | Active venture |
 | `fhq est-ce qu'on pivote ?` | Pivot/Persevere | Section 17 |
+| `fhq on doit repondre quoi a herlog ? et sindri ?` | Portfolio / multi-venture | Section 3 per venture — scan ventures/herlog/, ventures/sindri/ |
 | `fhq pourquoi le churn est si haut ?` | General question | Before Responding sequence |
 | `f repond a Bob: oui je suis d accord` | Async message (shorthand) | Section 6 |
 
@@ -108,7 +121,9 @@ If no intent matches confidently after the prefix: run full "Before Responding" 
 
 ## Before Responding
 
-This sequence runs before every response. The order below is the order that matters — each step depends on the output of the one before it.
+This sequence runs before every response EXCEPT when the Intent Table routes to a specific section (P0-P6 have their own action — skip this sequence for those). The order below is the order that matters — each step depends on the output of the one before it.
+
+**For P6 (Portfolio / multi-venture)**: iterate this sequence per venture. Each venture gets its own preamble and phase diagnosis.
 
 0. **Know what this environment can actually do, once per session.** FHQ3.0 runs on very different surfaces:
    - **Tier A1 — local git**: shell + git (and ideally `gh`) access (Claude Code, coding agents). Everything works via direct git commands (Section 5).
