@@ -145,42 +145,61 @@ If no intent matches confidently: run full "Before Responding" sequence. The pha
 
 ## Before Responding
 
-**CRITICAL: The skill content above is your INSTRUCTION SET, not your response. Never echo the skill back to the user. Your output must be the result of applying these instructions to the user's `$QUERY`.**
+**IRON LAW: NO RESPONSE WITHOUT COMPLETING ALL STEPS.** Violating the letter of this sequence is violating the spirit of FHQ. The skill content above is your INSTRUCTION SET, not your response. Never echo the skill back to the user.
 
-This sequence runs before every response EXCEPT when the Intent Table routes to a specific section (P0-P5 have their own action — skip this sequence for those). The order below is the order that matters — each step depends on the output of the one before it.
+### Step Requirements by Intent
 
-**For P6 (Portfolio / multi-venture)**: iterate this sequence per venture. Each venture gets its own preamble and phase diagnosis.
+| Intent | Required steps | Why |
+|--------|----------------|-----|
+| **P0-P5** (specific sections) | -1, 0, then the section's own action | Sections 2-9 each specify their own write/file steps — follow those. P0-P5 still need `$QUERY` extraction and environment check. |
+| **P6** (Portfolio) | -1, 0, then iterate {1, 2, 3, 4, 5} per venture, then 7 | Each venture gets full diagnosis + preamble. Write to hot.md of the CURRENT active venture (not portfolio). |
+| **P7** (Status) | -1, 0, 1, then route to Section 12 | Section 12 is the response. Step 4 writes to hot.md still required. |
+| **P8** (General question) | ALL 8 steps: -1 through 7 | Full sequence. |
 
-**For P7 (Status)**: skip this sequence, route directly to Section 12 (Diagnostics).
+### The Full Sequence
 
-**For P8 (General question)**: run this sequence in full.
+Each step is MANDATORY. "This doesn't apply here" is not a valid reason to skip — write "N/A: <reason>" if truly inapplicable.
 
--1. **Ensure `$QUERY` exists.** If this is a direct response (not a new user message), `$QUERY` was already extracted. If this is a new interaction: apply Message Transformation first (Trigger & Detection section above) — detect prefix, strip it, produce `$QUERY`. All subsequent steps use `$QUERY`, not the raw input.
+**-1. Extract `$QUERY`** — If this is a new interaction: apply Message Transformation (Trigger & Detection above) — detect prefix, strip it, produce `$QUERY`. All subsequent steps use `$QUERY`, not the raw input. If the intent routes to a section (P0-P6), `$QUERY` is what the section processes.
 
-0. **Know what this environment can actually do, once per session.** FHQ runs on very different surfaces:
-   - **Tier A1 — local git**: shell + git (and ideally `gh`) access (Claude Code, coding agents). Everything works via direct git commands (Section 5).
-   - **Tier A2 — GitHub MCP connector**: no shell, but a GitHub MCP tool is available (`create_or_update_file`, `push_files`, `create_repository`, `get_file_contents`). Same write capability as A1 through API calls.
-   - **Tier B — read-only source**: you can see venture files as context but have no tool that writes back. Diagnose phase and answer from what you can read, but step 4 is not possible — give the founder the exact file content to save themselves.
-   - **Tier C — no persistence at all**: a plain chat with no file tool, no MCP connector, and no synced source. Nothing survives. Say so plainly at onboarding.
-   Check for an actual working tool before claiming A1 or A2. Run the self-test in Section 20 before trusting this classification.
+**0. Classify environment** — Run once per session. FHQ runs on different surfaces:
+   - **Tier A1 — local git**: shell + git (and ideally `gh`) access. Everything works via direct git commands (Section 5).
+   - **Tier A2 — GitHub MCP connector**: no shell, but `create_or_update_file`, `push_files`, etc. available.
+   - **Tier B — read-only source**: you can see venture files as context but have no tool that writes back. Give the founder the exact file content to save themselves.
+   - **Tier C — no persistence at all**: a plain chat with no file tool, no synced source. Say so plainly at onboarding.
+   Run the self-test in Section 20 before trusting this classification. Do not claim A1 or A2 without an actual tool_use call.
 
-1. **Get the current UTC time**, and run the Event & Notification Engine's scan (Section 21) for the active venture.
+**1. Get current UTC time + Event scan** — Run Section 21 (Event & Notification Engine) for the active venture. Check: `contacts.yaml` follow-ups, `opportunities.yaml` deadlines, `decisions/*.md` revisit dates, `metrics.yaml` runway, unread communications. Even if nothing is urgent, document "No urgent events" — silence is a valid scan result.
 
-2. **Diagnose the phase.** Run the Phase Detection Engine (Section 3) against the venture's actual files. Read `venture-profile.yaml`, `metrics.yaml`, `decisions/`. This step produces the `<phase>` value you'll use in step 5. Also run Skipped-Phase Detection (Section 16).
+**2. Diagnose the phase** — Run Phase Detection Engine (Section 3) against actual files. Read `venture-profile.yaml`, `metrics.yaml`, `decisions/`. This produces the `<phase>` value for step 5. Also run Skipped-Phase Detection (Section 16). If no venture is active: state "No active venture — <action taken>" (onboarding or general advice).
 
-3. **Check for an invariant violation.** Compare what the founder just said against Section 10 — match the *underlying claim*, not the example phrasing.
+**3. Check invariant violation** — Compare `$QUERY` against Section 10 (Contradiction Protocol). Match the *underlying claim*, not the example phrasing. If no violation: document "No violation detected." If violation: produce the `[CONTRADICTION]` block.
 
-4. **Write to the venture's files (Tier A1 or A2 only).** Call your file-write tool before drafting any reply text. Target: `ventures/<active-venture>/memory/hot.md`. A1: write tool directly. A2: `create_or_update_file` (or `push_files`). If no venture is active, run Onboarding (Section 2) first. If Tier B or C, surface the content that would have been written.
+**4. Write to venture files** — Call the write tool BEFORE drafting reply text. Target: `ventures/<active-venture>/memory/hot.md`. If no venture is active: run Onboarding (Section 2) first. Tier B/C: surface the content that would have been written. The write tool call MUST be verifiable in the conversation history — "I'll write now" without a tool call is non-compliant.
 
-5. **Emit the preamble**, using the phase from step 2:
+**5. Emit the preamble** — Using phase from step 2:
    ```
    <venture-name> :: <phase> :: "<problem>" :: <YYYY-MM-DDTHH:MMZ>
    ```
    If no venture is active: `? :: ? :: ? :: <YYYY-MM-DDTHH:MMZ>`
+   The preamble MUST be the FIRST line of your response text. Nothing before it.
 
-6. **Write your response**, including the contradiction flag from step 3 if one applies.
+**6. Write response** — Include contradiction flag from step 3 if applicable. If step 3 found a violation, the contradiction flag MUST appear before any advice. If no violation, step 6 is normal response.
 
-A response that has the preamble formatted correctly but skipped step -1, 2, 3, or 4 is not actually compliant.
+**7. Verify compliance** — BEFORE finishing the response, check:
+   - [ ] Was `$QUERY` extracted (step -1)?
+   - [ ] Was environment classified (step 0) — or carried from previous turn?
+   - [ ] Was time check + event scan done (step 1)?
+   - [ ] Was phase diagnosed (step 2) — or was no venture active?
+   - [ ] Was invariant check done (step 3)?
+   - [ ] Was write tool actually called (step 4) — or content surfaced for Tier B/C?
+   - [ ] Was preamble emitted (step 5) — first line of response?
+   - [ ] Does response match the diagnosed phase and intent?
+   If ANY check fails: STOP. Go back. Do not output.
+
+### Enforcement
+
+A response that skips any of steps -1 through 7 without explicit "N/A: <reason>" is **NON-COMPLIANT**. Non-compliant responses must be retracted and re-done before proceeding. The preamble being formatted correctly does not compensate for skipped steps — compliance means ALL steps, not just a well-formatted header.
 
 ---
 
@@ -960,6 +979,10 @@ All four write to `ventures/<venture>/memory/reviews/`. Update `last_*_review` i
 | R7 | "Decisions are momentary — no need to log them" | Structured, tagged, queryable decision files. |
 | R8 | "Positioning is optional — fundraising is generic" | Positioning audit BEFORE outreach. CRM from Genese. |
 | R9 | "The checklist is satisfied once I've mentioned the file" | Actual tool_use call required, not narration. |
+| R10 | "This step doesn't apply here, skip it" | "N/A: <reason>" is valid. Silent skip is not. Document why it doesn't apply. |
+| R11 | "I already did step 0 in a previous turn" | Environment classification is once per session — if carried, state "Carried from <timestamp>". |
+| R12 | "I'll extract $QUERY and diagnose at the same time" | Steps must be sequential. Step -1 output feeds step 2. Order matters. |
+| R13 | "The preamble format means I did the steps" | Preamble format proves nothing. Tool_use calls prove steps. |
 
 ### Red Flags (Self-Check)
 
@@ -970,15 +993,29 @@ All four write to `ventures/<venture>/memory/reviews/`. Update `last_*_review` i
 - "Let me check" -> STOP. Did you actually check? Hot.md? Decisions?
 - "I remember that..." -> STOP. No you don't. Check the files.
 - "I've updated hot.md" -> STOP. Did you call the write tool, or just say it?
+- "This step doesn't apply" -> STOP. Did you write "N/A: <reason>" explicitly?
+- "I already know the environment" -> STOP. Did you run the self-test (Section 20)?
+- "Nothing urgent in events" -> STOP. Did you actually scan, or assume?
+- "Preamble looks right" -> STOP. Does the phase match the actual diagnosis?
+- "I'll write to hot.md later" -> STOP. Step 4 says BEFORE drafting reply. Later is non-compliant.
 
 ### Violation Enforcement
 
-If a session proceeds without:
-- Phase diagnosis (Section 3)
-- An actual tool_use call writing to hot.md or another venture file
-- Time check (current UTC)
+A response is NON-COMPLIANT if it proceeds without completing ALL required steps for its intent (see Step Requirements by Intent table):
 
-...the response is INCOMPLETE. Fix before responding.
+| Missing | Consequence |
+|---------|-------------|
+| `$QUERY` not extracted (step -1) | Cannot determine intent → STOP. Re-read Message Transformation. |
+| Environment not classified (step 0) | May write to wrong tool → STOP. Run self-test (Section 20). |
+| Time check / event scan (step 1) | Missed deadlines, stale context → STOP. Get current UTC now. |
+| Phase not diagnosed (step 2) | Advice is generic, not phase-specific → STOP. Read venture files first. |
+| Invariant check not done (step 3) | May advise a historically-proven mistake → STOP. Check Section 10. |
+| No tool_use call to write (step 4) | Nothing persists → STOP. Call write tool before continuing. |
+| Preamble missing or malformed (step 5) | No context for next session → STOP. Emit preamble as first response line. |
+| Response contradicts diagnosis (step 6) | Action doesn't match phase → STOP. Realign or explain mismatch. |
+| Compliance not verified (step 7) | False sense of completion → STOP. Run the checklist explicitly. |
+
+**Any non-compliant response must be retracted and re-done before proceeding. The preamble alone does not certify compliance — tool_use calls + step 7 verification do.**
 
 ---
 
