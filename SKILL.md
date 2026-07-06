@@ -242,7 +242,7 @@ The skill:
 1. Ask once: "Should I create a private GitHub repo for this, or keep it local only?"
 2. If yes:
    gh repo create FHQ3.0 --private --confirm
-   git init ~/FHQ3.0 (if not already) && cd ~/FHQ3.0
+   git init ~/FHQ/ (if not already) && cd ~/FHQ/
    git remote add origin <url from gh repo create output>
 3. Build the directory tree (TEMPLATES/, REFERENCES/cas/, ventures/) and .gitignore files exactly as specified in Section 1.
 4. git add -A && git commit -m "fhq3.0: initial setup" && git push -u origin main
