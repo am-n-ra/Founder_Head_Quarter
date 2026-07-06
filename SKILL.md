@@ -64,66 +64,95 @@ The case library now covers two tiers: **pre-seed** (001-020, verified company-b
 
 ---
 
-## Trigger & Detection
+## Message Transformation
 
-The skill is activated by venture-related language in the user query. `fhq` or `f` at the start of a message signals explicit FHQ3.0 mode. Without a prefix, the skill infers from context (venture words like "boite", "startup", "cofondateur", "vente", "pivot", etc.).
+**THIS IS THE MOST CRITICAL STEP.** Before anything else, you MUST extract the actual user query from the prefixed message.
 
-### Activation Priority
+### Step 0: Extract the Query
 
-| # | Signal | Mode | Behavior |
-|---|--------|------|----------|
-| 1 | Message starts with `fhq` or `f ` (prefix) | **Explicit** | Route through Intent Table below. The prefix IS the trigger — route even if no other venture keywords present. |
-| 2 | Message contains venture keywords without prefix | **Implicit** | Scan for intent keywords. If match is confident (>80%), route as if prefixed. If uncertain, ask "Je détecte un sujet venture — tu veux que j'active FHQ3.0 ?" |
-| 3 | Neither prefix nor keywords | **Passive** | Answer normally. Skill is inert. |
+The user message arrives in one of these forms:
 
-### Intent Routing Table (Explicit Mode)
+| Raw input | Prefix | Extracted query |
+|-----------|--------|----------------|
+| `/fhq on doit repondre a herlog?` | `/fhq` | `on doit repondre a herlog?` |
+| `fhq dis a Alice que...` | `fhq ` | `dis a Alice que...` |
+| `f repond a Bob: oui` | `f ` | `repond a Bob: oui` |
+| `fhq` | `fhq` (alone) | `` (empty — route to status) |
 
-After detecting `fhq`/`f` prefix, match the first applicable pattern in THIS priority order:
+**Rules:**
+1. Check if message starts with one of these prefixes: `/fhq`, `fhq `, `f `, `/f `
+2. If prefix found: **STRIP it**. Everything after the prefix is the `$QUERY`.
+3. If `$QUERY` is empty or whitespace-only → treat as `fhq` alone (status/diagnostics).
+4. If no prefix found → check Activation Modes below.
+5. **Never respond with the skill content itself. The skill is your instruction set, not your response.**
 
-| Priority | Intent | Match patterns | Action |
-|----------|--------|---------------|--------|
+### Activation Modes
+
+After extracting `$QUERY`:
+
+| # | Condition | Mode | Behavior |
+|---|-----------|------|----------|
+| 1 | Prefix was found | **Explicit** | Apply Intent Routing Table to `$QUERY`. |
+| 2 | No prefix, but `$QUERY` contains venture keywords (boite, startup, cofondateur, pivot, etc.) | **Implicit** | If confident (>80%): route as if explicit. If uncertain: ask "Je détecte un sujet venture — tu veux que j'active FHQ3.0 ?" |
+| 3 | No prefix, no venture keywords | **Passive** | Answer normally. Skill is inert. |
+
+### Intent Routing Table
+
+Apply to `$QUERY` (the extracted text after the prefix). Match the FIRST applicable pattern in THIS priority:
+
+| Priority | Intent | Match patterns in $QUERY | Action |
+|----------|--------|--------------------------|--------|
 | P0 | **Async message** | `dis a`, `dis à`, `repond a`, `répond à`, `message a`, `message à`, `dis @`, `répond @` | Route to Section 6 — write communication file, push |
 | P1 | **New venture / onboarding** | `je veux lancer`, `nouveau projet`, `nouvelle boite`, `onboarding`, `je commence`, `créer`, `nouvelle venture`, `importe`, `importe mon projet` | Route to Section 2 — Onboarding flow |
 | P2 | **Decision retrieval** | `on avait decidé`, `on avait décidé`, `quelle decision`, `qu'est-ce qu'on a decide`, `pourquoi on a choisi`, `décision du`, `decision du`, `rappelle moi` | Route to Section 11 — search decisions/ |
 | P3 | **Pivot / Persevere** | `pivot`, `on arrete`, `on arrête`, `abandonner`, `kill`, `est-ce que je continue` | Route to Section 17 — Pivot-or-Persevere Protocol |
 | P4 | **Add product** | `nouveau produit`, `ajoute un produit`, `nouveau module` | Add product to active venture |
 | P5 | **Add co-founder** | `avec <name>`, `nouveau cofondateur`, `nouveau collaborateur`, `ajoute <name>` | Route to Section 9 — Multi-Founder Protocol |
-| P6 | **Portfolio / multi-venture** | Message mentions 2+ venture names by name OR patterns like `on en fait quoi`, `c'est dans quelle org`, `toutes les ventures`, `portfolio`, `tous mes projets` | Scan ALL ventures/ directories. For each mentioned venture: run Phase Detection (Section 3), show phase + latest decision + next action. If no venture files exist for a mentioned name: assume Genese phase, suggest onboarding. If filesystem is inaccessible (Tier B/C): ask the founder to describe each venture's current state, then diagnose. |
-| P7 | **Status / diagnostics** | `fhq` (alone, no other keywords) | Run diagnostics (Section 12) |
+| P6 | **Portfolio / multi-venture** | Mentions 2+ venture names by name OR patterns: `on en fait quoi`, `c'est dans quelle org`, `toutes les ventures`, `portfolio`, `tous mes projets`, `bref on a beaucoup de choses` | Scan ALL ventures/ directories. For each mentioned venture: run Phase Detection (Section 3), show phase + latest decision + next action. If no venture files exist for a mentioned name: assume Genese phase, suggest onboarding. If filesystem inaccessible (Tier B/C): ask founder to describe each venture's state, then diagnose. |
+| P7 | **Status / diagnostics** | `$QUERY` is empty (message was just `fhq` or `/fhq` alone) | Run diagnostics (Section 12) |
 | P8 | **General question** | Anything not matched above | Run full "Before Responding" sequence (phase diagnosis → contradiction check → write → respond) |
 
-### Disambiguation Rules
+### Disambiguation
 
-If a message matches MULTIPLE intents (e.g., "fhq dis a Alice qu'on devrait pivoter"):
+If `$QUERY` matches MULTIPLE intents (e.g., "dis a Alice qu'on devrait pivoter"):
 1. **Async message** (P0) always wins — the communication is the primary action.
-2. If the message contains BOTH a question and a statement, the intent at the HIGHEST priority wins.
+2. If `$QUERY` contains BOTH a question and a statement, the intent at the HIGHEST priority wins.
 3. If truly ambiguous: execute the highest-priority intent, then flag: "J'ai envoyé le message à Alice. Tu veux aussi qu'on parle du pivot ?"
 
 ### Fallback
 
-If no intent matches confidently after the prefix: run full "Before Responding" sequence. The phase diagnosis and invariant check compensate for intent ambiguity.
+If no intent matches confidently: run full "Before Responding" sequence. The phase diagnosis and invariant check compensate for ambiguity.
 
-### Examples
+### Transformation Examples
 
-| User message | Intent | Route |
-|-------------|--------|-------|
-| `fhq` | Status | Section 12 |
-| `fhq je veux lancer une boite` | New venture | Section 2 |
-| `fhq dis a Alice que le pricing est pret` | Async message | Section 6 |
-| `fhq on avait decidé quoi sur le pricing ?` | Decision retrieval | Section 11 |
-| `fhq nouveau produit` | Add product | Active venture |
-| `fhq est-ce qu'on pivote ?` | Pivot/Persevere | Section 17 |
-| `fhq on doit repondre quoi a herlog ? et sindri ?` | Portfolio / multi-venture | Section 3 per venture — scan ventures/herlog/, ventures/sindri/ |
-| `fhq pourquoi le churn est si haut ?` | General question | Before Responding sequence |
-| `f repond a Bob: oui je suis d accord` | Async message (shorthand) | Section 6 |
+| Raw user input | Extracted $QUERY | Intent | Route |
+|----------------|------------------|--------|-------|
+| `/fhq` | `` (empty) | Status | Section 12 |
+| `fhq` | `` (empty) | Status | Section 12 |
+| `fhq je veux lancer une boite` | `je veux lancer une boite` | New venture | Section 2 |
+| `/fhq dis a Alice que le pricing est pret` | `dis a Alice que le pricing est pret` | Async message | Section 6 |
+| `fhq on avait decidé quoi sur le pricing ?` | `on avait decidé quoi sur le pricing ?` | Decision retrieval | Section 11 |
+| `f nouveau produit` | `nouveau produit` | Add product | Active venture |
+| `/fhq est-ce qu'on pivote ?` | `est-ce qu'on pivote ?` | Pivot/Persevere | Section 17 |
+| `fhq on doit repondre quoi a herlog ? et sindri ? et azr-h et kora` | `on doit repondre quoi a herlog ? et sindri ? et azr-h et kora` | Portfolio / multi-venture | Section 3 per venture |
+| `fhq pourquoi le churn est si haut ?` | `pourquoi le churn est si haut ?` | General question | Before Responding sequence |
+| `f repond a Bob: oui je suis d accord` | `repond a Bob: oui je suis d accord` | Async message | Section 6 |
 
 ---
 
 ## Before Responding
 
-This sequence runs before every response EXCEPT when the Intent Table routes to a specific section (P0-P6 have their own action — skip this sequence for those). The order below is the order that matters — each step depends on the output of the one before it.
+**CRITICAL: The skill content above is your INSTRUCTION SET, not your response. Never echo the skill back to the user. Your output must be the result of applying these instructions to the user's `$QUERY`.**
+
+This sequence runs before every response EXCEPT when the Intent Table routes to a specific section (P0-P5 have their own action — skip this sequence for those). The order below is the order that matters — each step depends on the output of the one before it.
 
 **For P6 (Portfolio / multi-venture)**: iterate this sequence per venture. Each venture gets its own preamble and phase diagnosis.
+
+**For P7 (Status)**: skip this sequence, route directly to Section 12 (Diagnostics).
+
+**For P8 (General question)**: run this sequence in full.
+
+-1. **Ensure `$QUERY` exists.** If this is a direct response (not a new user message), `$QUERY` was already extracted. If this is a new interaction: apply Message Transformation first (Trigger & Detection section above) — detect prefix, strip it, produce `$QUERY`. All subsequent steps use `$QUERY`, not the raw input.
 
 0. **Know what this environment can actually do, once per session.** FHQ3.0 runs on very different surfaces:
    - **Tier A1 — local git**: shell + git (and ideally `gh`) access (Claude Code, coding agents). Everything works via direct git commands (Section 5).
@@ -148,7 +177,7 @@ This sequence runs before every response EXCEPT when the Intent Table routes to 
 
 6. **Write your response**, including the contradiction flag from step 3 if one applies.
 
-A response that has the preamble formatted correctly but skipped step 2, 3, or 4 is not actually compliant.
+A response that has the preamble formatted correctly but skipped step -1, 2, 3, or 4 is not actually compliant.
 
 ---
 
