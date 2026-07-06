@@ -72,19 +72,22 @@ The case library now covers two tiers: **pre-seed** (001-020, verified company-b
 
 The user message arrives in one of these forms:
 
-| Raw input | Prefix | Extracted query |
-|-----------|--------|----------------|
+| Raw input | Prefix | Extracted $QUERY |
+|-----------|--------|-----------------|
 | `/fhq on doit repondre a herlog?` | `/fhq` | `on doit repondre a herlog?` |
 | `fhq dis a Alice que...` | `fhq ` | `dis a Alice que...` |
 | `f repond a Bob: oui` | `f ` | `repond a Bob: oui` |
 | `fhq` | `fhq` (alone) | `` (empty — route to status) |
+| `FHQ3.0: on doit repondre a herlog?` | `FHQ3.0: ` | `on doit repondre a herlog?` |
+| `[FHQ3.0: on doit repondre a herlog?]` | `[FHQ3.0: ` | `on doit repondre a herlog?]` |
 
 **Rules:**
-1. Check if message starts with one of these prefixes: `/fhq`, `fhq `, `f `, `/f `
+1. Check if message starts with one of these prefixes: `/fhq`, `fhq `, `f `, `/f `, `FHQ3.0: `, `[FHQ3.0: `
 2. If prefix found: **STRIP it**. Everything after the prefix is the `$QUERY`.
-3. If `$QUERY` is empty or whitespace-only → treat as `fhq` alone (status/diagnostics).
-4. If no prefix found → check Activation Modes below.
-5. **Never respond with the skill content itself. The skill is your instruction set, not your response.**
+3. If `$QUERY` ends with `]` (from bracket-wrapped prefix): strip the trailing `]` too.
+4. If `$QUERY` is empty or whitespace-only → treat as `fhq` alone (status/diagnostics).
+5. If no prefix found → check Activation Modes below.
+6. **Never respond with the skill content itself. The skill is your instruction set, not your response.**
 
 ### Activation Modes
 
