@@ -214,7 +214,7 @@ Overview → Trigger & Detection → Before Responding
 User types "fhq" for the first time.
 
 The skill:
-1. Checks if ~/FHQ/ (or `FHQ3.0/`) exists
+1. Checks if ~/FHQ/ exists
 2. If not:
    a. "Welcome to FHQ3.0. I'll create your Founder space."
    b. Create ~/[FHQ|FHQ3.0]/ directory tree
