@@ -1,6 +1,6 @@
 ---
 name: fhq
-description: Use when starting, running, or diagnosing a venture. FHQ — FounderHQ Venture OS. Covers venture lifecycle, persistent memory, async team communication, early believer positioning, and multi-founder collaboration. Triggered by "fhq", "f", or venture-related fuzzy matches.
+description: Use when starting, running, or diagnosing a venture. Triggered by "fhq", "f", or venture-related keywords.
 ---
 
 # FHQ — FounderHQ Venture OS
