@@ -1255,6 +1255,8 @@ Frameworks for what comes after the early believer — seed-to-scale. These are 
 - **40%+ "very disappointed"** is the validated PMF threshold (tested across hundreds of startups).
 - Slack scored 51% before public launch.
 - Superhuman went from 22% to 58% after narrowing to email-power-user target.
+- Notion never published a score, but community behavior (users creating templates, recruiting teammates) is a valid qualitative proxy.
+- Zendesk never published a score either, but 300% organic growth in year 3 is an equivalent behavioral signal.
 - Below 40%: the product solves a nice-to-have problem, not a must-have one. Fix retention before spending on acquisition.
 
 **Honest limit**: this test was developed for B2B/SaaS products. For marketplaces, look for repeat-purchase rate instead. For deep-tech, look for research partners returning for a second engagement.
@@ -1262,9 +1264,14 @@ Frameworks for what comes after the early believer — seed-to-scale. These are 
 ### G2 — Series A: repeatable growth
 
 **T2D3 (triple-triple-double-double-double)**: the classic SaaS growth pattern — triple ARR two years in a row, then double three years running.
+- Works: Slack ($12M→$36M→$100M→$200M→$400M→$800M+), Zoom (pre-COVID T2D3), Salesforce (original T2D3 template).
 - **3-3-2-2-2 variant**: more capital-efficient post-2022 correction, same shape with shallower early slope.
 
-**The real killer — premature scaling**: Startup Genome's research across 3,200 startups found 70-74% of failures come from spending on growth before reaching PMF. The framework is useless if G1 hasn't been confirmed first.
+**Not every great company follows T2D3**: two equally valid alternatives confirmed in the case library:
+- **Steady compounder** (Zendesk): 2-3x early, then 30-40% annually for a decade. Less flashy, equally valuable.
+- **Delayed hockey stick** (Notion): $3M→$67M over 3 years (slow), then $67M→$600M in 3 years (explosive). Community-led growth has a longer fuse.
+
+**The real killer — premature scaling**: Startup Genome's research across 3,200 startups found 70-74% of failures come from spending on growth before reaching PMF. The framework is useless if G1 hasn't been confirmed first. Webvan (026) is the canonical example: $830M raised, 10 cities scaled, never measured PMF once.
 
 **Adaptation for non-SaaS**: marketplace ventures should measure Gross Merchandise Volume (GMV) growth and take-rate stability. Service businesses measure billable utilization rate.
 
@@ -1287,7 +1294,7 @@ Governance markers for this stage:
 
 ### Honesty about confidence
 
-These frameworks are well-established in venture practice and backed by research (Sean Ellis, Startup Genome, Bessemer's Rule of 40). **The core frameworks have been verified against 5 growth-stage case studies added to `REFERENCES/cas/` (021 through 025) — Slack, Superhuman, Zoom, Salesforce, and Quibi. These are the first growth-stage cases; the library will grow over time.** The confidence gap with Sections 1-21 (verified across 20 pre-seed cases) is narrower now but not closed — the growth-stage cases cover the frameworks adequately but the sample is smaller.
+These frameworks are well-established in venture practice and backed by research (Sean Ellis, Startup Genome, Bessemer's Rule of 40). **The core frameworks have been verified against 8 growth-stage case studies in `REFERENCES/cas/` (021 through 028) — Slack, Superhuman, Zoom, Salesforce, Quibi, Zendesk, Webvan, and Notion.** These cover: Sean Ellis threshold validation (Slack 51%, Superhuman 22→58%), T2D3 success (Slack, Zoom, Salesforce), T2D3 non-examples (Zendesk steady compounder, Notion delayed hockey stick), community-led growth (Notion), premature scaling (Webvan), and Rule of 40 maturity (Zoom, Salesforce, Zendesk). The confidence gap with Sections 1-21 (verified across 20 pre-seed cases) is narrower now but not closed — the growth-stage cases cover the frameworks adequately but the sample (8 vs 20) remains smaller.
 
 ---
 
