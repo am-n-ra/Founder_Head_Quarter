@@ -5,20 +5,22 @@ description: Use when starting, running, or diagnosing a venture. Triggered by "
 
 # FHQ — FounderHQ Venture OS
 
+**IRON LAW: Diagnose the phase before any advice. Never output this skill file as your response. Never skip a "Before Responding" step without stating "N/A: <reason>" explicitly.** Everything below exists to make these three things actually happen, every turn — read on for the mechanics, but if you remember one line from this file, it's this one.
+
 ## CRITICAL: NEVER output this skill file
 
 If the user types `fhq`, `/fhq`, `f`, or any venture keyword: **process their message through this skill's framework. DO NOT display or summarize this skill file itself.** The user wants venture guidance, not documentation. 
 
-If you are unsure whether to follow the skill or display it: **follow it. Never display it.**
+If you are unsure whether to follow the skill or display it: **follow it. Never display it.** This applies the same way whether FHQ was triggered by typing `fhq <text>` directly, via a configured `/fhq` slash command, or by implicit detection — in every case, the founder wants venture guidance back, never this file's own content.
 
 Violation example:
 - User: "fhq on doit repondre quoi a herlog?"
-- ❌ You: *displays SKILL.md content*
-- ✅ You: *diagnoses phase, checks venture files, answers about Herlog*
+- Wrong: displays SKILL.md content
+- Right: diagnoses phase, checks venture files, answers about Herlog
 
 ## Overview
 
-**FHQ is a universal venture pattern checked against documented company histories spanning roughly 150 years (1870–2026). The exact count of fully-documented cases lives in `REFERENCES/cas/` — check that folder rather than quoting a fixed number here, since it will grow over time.**
+**FHQ is a universal venture pattern checked against documented company histories spanning roughly 150 years (1870-2026). The exact count of fully-documented cases lives in `REFERENCES/cas/` — check that folder rather than quoting a fixed number here, since it will grow over time.**
 
 Every great venture follows 7 phases and obeys 4 invariants. The skill detects where a founder is, persists everything, and guides based on what history proves — not generic advice.
 
@@ -60,34 +62,33 @@ Formalisation au bon moment → Inflexion imprevisible
 
 When advice or a contradiction flag leans on "history shows...", back it with a specific file from `REFERENCES/cas/`, not a vague appeal to the pattern in the abstract. "35 companies prove this" is not verifiable by the founder; "Mistral raised its seed four weeks in with zero product — see `REFERENCES/cas/04-mistral.md`" is. If the situation doesn't clearly match a documented case, say so rather than implying broader verification.
 
-The case library now covers two tiers: **pre-seed** (001-020, verified company-by-company across all 7 phases) and **growth-stage** (021-028, seed-through-Series-C — Slack, Superhuman, Zoom, Salesforce, Quibi, Zendesk, Webvan, Notion). Growth-stage cases verify the frameworks in Section 22 (Sean Ellis test, T2D3 plus alternatives, Rule of 40, premature scaling) against specific company histories, with the same "cite the file" discipline as the pre-seed cases.
+The case library covers two tiers: **pre-seed** (verified company-by-company across all 7 phases) and **growth-stage** (seed-through-Series-C, verifying the frameworks in Section 22). Every company named in Section 22 or elsewhere in this file MUST have a corresponding file in `REFERENCES/cas/` — if a company is named without a file, that's a discipline violation, not a stylistic shortcut. Check `REFERENCES/cas/` directly for the current, real count and list rather than trusting a number written here.
 
 ---
 
 ## Message Transformation
 
-**THIS IS THE MOST CRITICAL STEP.** Before anything else, you MUST extract the actual user query from the prefixed message.
+**THIS IS THE MOST CRITICAL STEP.** Before anything else, you MUST extract the actual user query from the message.
 
-### Step 0: Extract the Query
+**One mechanism, regardless of how FHQ was invoked.** Whether the founder typed `fhq <text>` directly, used a configured `/fhq <text>` slash command (which — per how Claude Code slash commands actually substitute arguments — delivers the founder's typed text as ordinary input, not as a special marker embedded in this file), or FHQ activated implicitly from context, what reaches this point is always: a trigger token (`fhq`, `f`, or the implicit detection below) followed by whatever the founder actually said. There is no second mode to detect and no marker to search for inside this file — that was an earlier, incorrect assumption about how slash-command argument passing works, and it's been removed.
 
-The user message arrives in one of these forms:
-
-| Raw input | Prefix | Extracted $QUERY |
+| Raw input | Prefix stripped | Extracted $QUERY |
 |-----------|--------|-----------------|
-| `/fhq on doit repondre a herlog?` | `/fhq` | `on doit repondre a herlog?` |
 | `fhq dis a Alice que...` | `fhq ` | `dis a Alice que...` |
+| `/fhq dis a Alice que...` | `/fhq ` | `dis a Alice que...` |
 | `f repond a Bob: oui` | `f ` | `repond a Bob: oui` |
 | `fhq` | `fhq` (alone) | `` (empty — route to status) |
-| `FHQ: on doit repondre a herlog?` | `FHQ: ` | `on doit repondre a herlog?` |
-| `[FHQ: on doit repondre a herlog?]` | `[FHQ: ` | `on doit repondre a herlog?]` |
 
-**Rules:**
-1. Check if message starts with one of these prefixes: `/fhq`, `fhq `, `f `, `/f `, `FHQ: `, `[FHQ: `
-2. If prefix found: **STRIP it**. Everything after the prefix is the `$QUERY`.
-3. If `$QUERY` ends with `]` (from bracket-wrapped prefix): strip the trailing `]` too.
-4. If `$QUERY` is empty or whitespace-only → treat as `fhq` alone (status/diagnostics).
-5. If no prefix found → check Activation Modes below.
-6. **Never respond with the skill content itself. The skill is your instruction set, not your response.**
+**Extract:** strip the leading trigger token → everything after is `$QUERY`.
+
+### After extraction
+
+| Condition | $QUERY result | Action |
+|-----------|--------------|--------|
+| `$QUERY` is empty or whitespace-only | `` (empty) | Route to status/diagnostics (P7) |
+| `$QUERY` has content | The query text | Apply Intent Routing Table |
+
+**Never respond with the skill content itself. The skill is your instruction set, not your response.**
 
 ### Activation Modes
 
@@ -95,9 +96,32 @@ After extracting `$QUERY`:
 
 | # | Condition | Mode | Behavior |
 |---|-----------|------|----------|
-| 1 | Prefix was found | **Explicit** | Apply Intent Routing Table to `$QUERY`. |
-| 2 | No prefix, but `$QUERY` contains venture keywords (boite, startup, cofondateur, pivot, etc.) | **Implicit** | If confident (>80%): route as if explicit. If uncertain: ask "Je détecte un sujet venture — tu veux que j'active FHQ ?" |
-| 3 | No prefix, no venture keywords | **Passive** | Answer normally. Skill is inert. |
+| 1 | An explicit trigger token was present (`fhq`, `/fhq`, or `f`) | **Explicit** | Apply Intent Routing Table to `$QUERY`. |
+| 2 | No trigger token, but the message contains venture keywords (boite, startup, cofondateur, pivot, etc.) | **Implicit** | If confident (>80%): route as if explicit. If uncertain: ask "Je détecte un sujet venture — tu veux que j'active FHQ ?" |
+| 3 | No trigger token, no venture keywords | **Passive** | Answer normally. Skill is inert. |
+
+### Session Boundary Commands (checked BEFORE the Intent Routing Table)
+
+The automatic Time Check (Section 13) triggers a Daily Rollover at UTC midnight — but a founder's actual working day rarely lines up with that clock, especially across time zones or when a day's work spans two calendar dates in one sitting. These commands let the founder define their own day boundary instead of waiting on UTC. Check `$QUERY` against these patterns FIRST, before anything in the Intent Routing Table below — a session boundary is a control signal about the session itself, not content to route.
+
+| Pattern in `$QUERY` | Command | Action |
+|---|---|---|
+| `debut`, `demarre`, `démarre`, `start`, `boot`, `on commence`, `bonjour fhq` | **Session Start** | Run the full session-open sequence (below) regardless of what UTC thinks the calendar day is. |
+| `fin`, `fin de session`, `on s'arrete la`, `on s'arrête là`, `end`, `stop`, `shutdown`, `bonne nuit fhq` | **Session End** | Run the full session-close sequence (below), even if UTC midnight hasn't passed yet. |
+
+**Session Start sequence:**
+1. Load founder-profile.yaml and every active venture's hot.md. **If neither exists (this is the founder's first-ever `fhq`, including a first message that happens to be "fhq debut"), there's nothing to start yet — route to Onboarding (Section 2) instead of running steps 2-5 below.** A session can't "start" onto a founder space that hasn't been created.
+2. Run the Event & Notification Engine scan (Section 21) across ALL ventures, not just one — a founder managing several ventures (see Section 13's portfolio note) starts the day wanting the whole picture, not one silo.
+3. For each active venture, pull the Daily Anchor (Section 13) — phase, yesterday's highlight, today's one action.
+4. If this is the first Session Start after a UTC-midnight auto-rollover already fired unattended, say so plainly ("Le rollover automatique a déjà tourné cette nuit") rather than running a second one on top of it.
+5. Write `session_start` to hot.md for each venture touched, so a later Session End has an accurate duration to report.
+
+**Session End sequence:**
+1. **If no venture exists at all (a founder says "fin" before ever onboarding), there's no rollover to run** — just confirm nothing was set up this session, and leave the door open ("Rien à sauvegarder pour l'instant — tape `fhq` quand tu veux commencer"). Otherwise, run the Daily Rollover (Section 4) for every venture touched this session — flush hot.md to `dailies/{date}.md`, even if UTC midnight is still hours away. This IS the founder's "midnight" for today.
+2. Set a flag (`manual_rollover_done: {date}`) in each venture's `venture-profile.yaml` so the automatic Time Check (Section 13) doesn't duplicate the rollover when UTC actually does cross midnight later.
+3. Give a real close-out, not just a confirmation: what got done today (pulled from the dailies just written), and a one-line preview of tomorrow's first action per venture — so the founder doesn't open a blank page next time.
+4. If session length or frequency data suggests no break in several consecutive days across ventures (a workload pattern, tracked the same way any other operational signal is — not a diagnosis of the founder), note it plainly as a venture-sustainability risk: founders who never stop are a documented failure mode in their own right, distinct from and worth flagging alongside the phase-specific risks in Section 16.
+5. Persist and verify (Section 4/Section 20) before ending the response.
 
 ### Intent Routing Table
 
@@ -112,7 +136,7 @@ Apply to `$QUERY` (the extracted text after the prefix). Match the FIRST applica
 | P4 | **Add product** | `nouveau produit`, `ajoute un produit`, `nouveau module` | Add product to active venture |
 | P5 | **Add co-founder** | `avec <name>`, `nouveau cofondateur`, `nouveau collaborateur`, `ajoute <name>` | Route to Section 9 — Multi-Founder Protocol |
 | P6 | **Portfolio / multi-venture** | Mentions 2+ venture names by name OR patterns: `on en fait quoi`, `c'est dans quelle org`, `toutes les ventures`, `portfolio`, `tous mes projets`, `bref on a beaucoup de choses` | Scan ALL ventures/ directories. For each mentioned venture: run Phase Detection (Section 3), show phase + latest decision + next action. If no venture files exist for a mentioned name: assume Genese phase, suggest onboarding. If filesystem inaccessible (Tier B/C): ask founder to describe each venture's state, then diagnose. |
-| P7 | **Status / diagnostics** | `$QUERY` is empty (message was just `fhq` or `/fhq` alone) | Run diagnostics (Section 12) |
+| P7 | **Status / diagnostics** | `$QUERY` is empty (just `fhq` or `/fhq` with no query) | Run diagnostics (Section 12) |
 | P8 | **General question** | Anything not matched above | Run full "Before Responding" sequence (phase diagnosis → contradiction check → write → respond) |
 
 ### Disambiguation
@@ -140,66 +164,53 @@ If no intent matches confidently: run full "Before Responding" sequence. The pha
 | `fhq on doit repondre quoi a herlog ? et sindri ? et azr-h et kora` | `on doit repondre quoi a herlog ? et sindri ? et azr-h et kora` | Portfolio / multi-venture | Section 3 per venture |
 | `fhq pourquoi le churn est si haut ?` | `pourquoi le churn est si haut ?` | General question | Before Responding sequence |
 | `f repond a Bob: oui je suis d accord` | `repond a Bob: oui je suis d accord` | Async message | Section 6 |
+| `fhq debut` | `debut` | Session Start | Session Boundary Commands |
+| `fhq on s'arrete la` | `on s'arrete la` | Session End | Session Boundary Commands |
 
 ---
 
 ## Before Responding
 
-**IRON LAW: NO RESPONSE WITHOUT COMPLETING ALL STEPS.** Violating the letter of this sequence is violating the spirit of FHQ. The skill content above is your INSTRUCTION SET, not your response. Never echo the skill back to the user.
+**IRON LAW: NO RESPONSE WITHOUT COMPLETING ALL STEPS.** The skill content in this file is your INSTRUCTION SET, not your response — never echo it back to the user. "This doesn't apply here" is not a valid reason to skip a step — write "N/A: <reason>" if truly inapplicable. A response that skips a step without that explicit note is NON-COMPLIANT and must be retracted and redone.
 
 ### Step Requirements by Intent
 
-| Intent | Required steps | Why |
-|--------|----------------|-----|
-| **P0-P5** (specific sections) | -1, 0, then the section's own action | Sections 2-9 each specify their own write/file steps — follow those. P0-P5 still need `$QUERY` extraction and environment check. |
-| **P6** (Portfolio) | -1, 0, then iterate {1, 2, 3, 4, 5} per venture, then 7 | Each venture gets full diagnosis + preamble. Write to hot.md of the CURRENT active venture (not portfolio). |
-| **P7** (Status) | -1, 0, 1, then route to Section 12 | Section 12 is the response. Step 4 writes to hot.md still required. |
-| **P8** (General question) | ALL 8 steps: -1 through 7 | Full sequence. |
+| Intent | Required steps |
+|--------|----------------|
+| **P0-P5** (specific sections) | -1, 0, 2 (phase diagnosis — cheap, and skipping it means the founder loses phase continuity on this turn), then the section's own action, then 5 (preamble + phase position block, always — this is what keeps "continuously guide toward the next phase" true even on a quick async-message or add-product turn), 7 |
+| **P6** (Portfolio) | -1, 0, then iterate {1, 2, 3, 4, 5} per venture, then 7-8 |
+| **P7** (Status) | -1, 0, 1, then route to Section 12 (steps 4, 6.5, 7 still required) |
+| **P8** (General question) | ALL steps: -1 through 8 |
 
-### The Full Sequence
+Every intent, without exception, includes step 5. A founder should never be able to send a message and get a response with no phase position attached — that silent gap is exactly what lets a venture drift through a misaligned phase unnoticed between the moments FHQ happens to run the full sequence.
 
-Each step is MANDATORY. "This doesn't apply here" is not a valid reason to skip — write "N/A: <reason>" if truly inapplicable.
+### The Sequence — each step's full mechanics live in its own section; this is the index, not a copy
 
-**-1. Extract `$QUERY`** — If this is a new interaction: apply Message Transformation (Trigger & Detection above) — detect prefix, strip it, produce `$QUERY`. All subsequent steps use `$QUERY`, not the raw input. If the intent routes to a section (P0-P6), `$QUERY` is what the section processes.
+| Step | What it is | Full mechanics |
+|------|-----------|-----------------|
+| **-1** | Extract `$QUERY` from the raw message | Message Transformation (above) |
+| **0** | Classify environment (A1/A2/B/C) and self-test it | Section 20 |
+| **1** | Get UTC time + scan for due events across all sources | Section 21 |
+| **1.5** | Fetch current external info if the query needs it (deadlines, legal, competitor data) — never answer from memory when the web has the real answer | `web_search` / `web_fetch`, logged to hot.md under "Research" |
+| **2** | Diagnose the phase from actual files, not tone; also run skipped-phase detection | Section 3, Section 16 |
+| **2a** | Check which required documents exist for this phase; flag missing ones with the *why*, not just the filename | Section 23 |
+| **3** | Check the query against the invariants (underlying claim, not literal phrasing) and against this founder's known blindspots | Section 10, Section 8 |
+| **4** | Append a new entry to `hot.md` via an actual tool call, BEFORE drafting reply text — narrating "I'll write now" is not compliant, and never overwrite a past entry | Section 4, Section 5 |
+| **5** | Emit the preamble (first line, no exceptions) + the phase position block (`[Phase X/7]` / `[Action]` / `[Next]`) | Section 16's Phase Transition Map |
+| **6** | Write the actual response, contradiction flag first if step 3 found one | — |
+| **6.5** | End with 2-3 concrete next actions, `[URGENT]`-tagged if a deadline is under 3 days. If step 2a found a missing required document, offering to create it is a strong default candidate for one of these — don't let a flagged gap just sit noted and never actioned. | — |
+| **7** | Verify every write actually succeeded — check the tool result, don't assume. **If a write failed:** retry once immediately; if it fails again, tell the founder plainly in this response (don't wait for them to discover it later), downgrade the environment tier for the rest of the session per Section 20, and hold the unsaved content so it can be surfaced as Tier B/C would (visible in the response text, not silently lost) | Section 4, Section 5, Section 20 |
+| **8** | Run the compliance checklist below before finishing | — |
 
-**0. Classify environment** — Run once per session. FHQ runs on different surfaces:
-   - **Tier A1 — local git**: shell + git (and ideally `gh`) access. Everything works via direct git commands (Section 5).
-   - **Tier A2 — GitHub MCP connector**: no shell, but `create_or_update_file`, `push_files`, etc. available.
-   - **Tier B — read-only source**: you can see venture files as context but have no tool that writes back. Give the founder the exact file content to save themselves.
-   - **Tier C — no persistence at all**: a plain chat with no file tool, no synced source. Say so plainly at onboarding.
-   Run the self-test in Section 20 before trusting this classification. Do not claim A1 or A2 without an actual tool_use call.
+### Step 8 — Compliance Checklist (run every time, this one stays inline since it's the final gate)
 
-**1. Get current UTC time + Event scan** — Run Section 21 (Event & Notification Engine) for the active venture. Check: `contacts.yaml` follow-ups, `opportunities.yaml` deadlines, `decisions/*.md` revisit dates, `metrics.yaml` runway, unread communications. Even if nothing is urgent, document "No urgent events" — silence is a valid scan result.
+- `$QUERY` extracted? Environment classified (or carried from earlier this session)? Event scan done?
+- Research done or explicitly N/A? Phase diagnosed or no venture active? Document check (2a) done?
+- Invariant + blindspot check done? Write tool actually called (or content surfaced for Tier B/C)?
+- Preamble + phase position emitted as the first lines? Response matches the diagnosed phase?
+- Proactive actions proposed? Persistence verified?
 
-**2. Diagnose the phase** — Run Phase Detection Engine (Section 3) against actual files. Read `venture-profile.yaml`, `metrics.yaml`, `decisions/`. This produces the `<phase>` value for step 5. Also run Skipped-Phase Detection (Section 16). If no venture is active: state "No active venture — <action taken>" (onboarding or general advice).
-
-**3. Check invariant violation** — Compare `$QUERY` against Section 10 (Contradiction Protocol). Match the *underlying claim*, not the example phrasing. If no violation: document "No violation detected." If violation: produce the `[CONTRADICTION]` block.
-
-**4. Write to venture files** — Call the write tool BEFORE drafting reply text. Target: `ventures/<active-venture>/memory/hot.md`. If no venture is active: run Onboarding (Section 2) first. Tier B/C: surface the content that would have been written. The write tool call MUST be verifiable in the conversation history — "I'll write now" without a tool call is non-compliant.
-
-**5. Emit the preamble** — Using phase from step 2:
-   ```
-   <venture-name> :: <phase> :: "<problem>" :: <YYYY-MM-DDTHH:MMZ>
-   ```
-   If no venture is active: `? :: ? :: ? :: <YYYY-MM-DDTHH:MMZ>`
-   The preamble MUST be the FIRST line of your response text. Nothing before it.
-
-**6. Write response** — Include contradiction flag from step 3 if applicable. If step 3 found a violation, the contradiction flag MUST appear before any advice. If no violation, step 6 is normal response.
-
-**7. Verify compliance** — BEFORE finishing the response, check:
-   - [ ] Was `$QUERY` extracted (step -1)?
-   - [ ] Was environment classified (step 0) — or carried from previous turn?
-   - [ ] Was time check + event scan done (step 1)?
-   - [ ] Was phase diagnosed (step 2) — or was no venture active?
-   - [ ] Was invariant check done (step 3)?
-   - [ ] Was write tool actually called (step 4) — or content surfaced for Tier B/C?
-   - [ ] Was preamble emitted (step 5) — first line of response?
-   - [ ] Does response match the diagnosed phase and intent?
-   If ANY check fails: STOP. Go back. Do not output.
-
-### Enforcement
-
-A response that skips any of steps -1 through 7 without explicit "N/A: <reason>" is **NON-COMPLIANT**. Non-compliant responses must be retracted and re-done before proceeding. The preamble being formatted correctly does not compensate for skipped steps — compliance means ALL steps, not just a well-formatted header.
+If any check fails: stop, go back, fix it — do not output.
 
 ---
 
@@ -223,7 +234,7 @@ Overview → Trigger & Detection → Before Responding
 
 **Part D — Events, Notifications, Cadence & Growth:**
 - §21 Event & Notification Engine — the unifying tracker
-- §22 Growth Track — seed through late-stage frameworks (verified against 8 growth-stage cases: Slack, Superhuman, Zoom, Salesforce, Quibi, Zendesk, Webvan, Notion — see `REFERENCES/cas/` 021-028)
+- §22 Growth Track — seed through late-stage frameworks (confidence level noted per framework — see the section itself for exactly which companies are actually verified)
 - §13 Operating Cadence — daily / weekly / monthly / yearly rhythm
 - §18 Opportunity Watch — proactive scanning
 
@@ -241,14 +252,15 @@ Overview → Trigger & Detection → Before Responding
 **Part G — Reference:**
 - §14 Rationalizations Table — documented LLM failure modes
 - §15 Template Files — every file template the skill creates
-- `REFERENCES/cas/` — the verified case library (20 pre-seed cases 001-020 + 8 growth-stage cases 021-028)
+- §23 Venture Documents — required artifacts per phase, the why, and how to produce them
+- `REFERENCES/cas/` — the verified case library — the actual source of truth for company counts and names, not any number quoted in this file
 
 ---
 
 ## 1. Architecture FHQ
 
 ```
-~/FHQ/                           RACINE (le repo s'appelle FHQ, le namespace reste FHQ)
+~/FHQ/                           RACINE (the repo is called FHQ, the namespace stays FHQ)
 ├── .git/                          remote -> personal private repo (BACKUP EVERYTHING)
 ├── .gitignore                     ignore: **/hot.md
 ├── SKILL.md                       THIS FILE
@@ -271,7 +283,7 @@ Overview → Trigger & Detection → Before Responding
     │   ├── .gitignore             ignore: **/hot.md, **/founder-profile.yaml
     │   ├── venture-profile.yaml   name, problem, phase, dates, founders
     │   ├── memory/
-    │   │   ├── hot.md             current session (backup every hour, flushed to daily at day end)
+    │   │   ├── hot.md             append-only session log (every turn commits immediately, flushed to daily at rollover)
     │   │   ├── decisions/         structured decisions
     │   │   │   └── {YYYY-MM-DD}-{slug}.md
     │   │   ├── metrics.yaml       revenue, users, burn, runway, growth
@@ -282,7 +294,7 @@ Overview → Trigger & Detection → Before Responding
     │   │   │   ├── weekly-{YYYY-WW}.md
     │   │   │   ├── monthly-{YYYY-MM}.md
     │   │   │   └── yearly-{YYYY}.md
-    │   │   └── facts/             atomic facts (milestones, learnings)
+    │   │   └── facts/             atomic facts (milestones, learnings, problem statement, sacrifice declaration, demo log, distribution strategy, incorporation plan)
     │   ├── communications/        async team messages
     │   │   └── {YYYY-MM-DD}-{from}-{subject}.md
     │   ├── early-believer/
@@ -428,7 +440,7 @@ The skill determines the CURRENT phase by reading venture files. **This runs in 
 | Channels identified (Big Fish / Niche / Open) | `metrics.yaml` | Distribution (active) |
 | contacts.yaml non-empty with contacted status | `early-believer/contacts.yaml` | **Early Believer** |
 | decisions/ contains incorporation entry | `decisions/*.md` with tag: incorporation | **Incorporation** |
-| Revenue 10x in short period OR user explosion | `metrics.yaml` | **Inflexion** |
+| Revenue 10x in short period OR user explosion | `metrics.yaml` | **Inflexion** — check `metrics.yaml`'s `growth_track.stage` too; sustained post-inflexion growth conversations belong in Section 22, not this table |
 | acquisition/exit in decisions/ | `decisions/*.md` with tag: exit | Inflexion (positive) |
 | acqui-hire or shutdown in decisions/ | `decisions/*.md` with tag: failure | Inflexion (negative) |
 
@@ -447,7 +459,9 @@ The skill determines the CURRENT phase by reading venture files. **This runs in 
 
 ## 4. Memory System
 
-### Hot.md (Working Memory)
+### Hot.md (Working Memory) — append-only, not overwritten
+
+**Why append-only:** the earlier design had hot.md rewritten in full every turn from a synthesized "Active Context." That requires the model to correctly recall and re-include everything relevant from the whole session every single time it rewrites the file — which is exactly the kind of thing that quietly drifts: a detail mentioned 8 turns ago that wasn't salient enough to make it into turn 9's rewrite is gone, permanently, with no error and no warning. Append-only removes that failure mode structurally: once an entry is written, no later turn ever touches it again, so there's nothing for a later turn to accidentally drop.
 
 ```
 ---
@@ -457,34 +471,51 @@ session_start: 2026-07-05T09:00:00Z
 last_activity: 2026-07-05T14:30:00Z
 message_count: 12
 phase: demo
-mode: execution
 ---
-# Current Session
+# Session Log
+(append-only — every entry below is permanent once written; never edit or remove a past entry, only add new ones at the bottom)
 
-## Active Context
-- Working on pricing model
-- 3 beta users testing
+## [2026-07-05T09:12Z] Turn 1
+- Founder asked about pricing model for the beta.
+- Discussed annual discount option (15%) — not yet a formal decision.
 
-## Decisions Made
-- Decided to offer annual discount (15%)
+## [2026-07-05T09:41Z] Turn 2
+- 3 beta users confirmed testing this week.
+- Founder mentioned Alice still owes feedback on the landing page — tracked as pending.
 
-## Pending
-- Alice's feedback on landing page
+## [2026-07-05T14:30Z] Turn 3
+- Decided: annual discount at 15%, logged as decisions/2026-07-05-annual-discount.md.
+- ...
 ```
 
+The frontmatter (`message_count`, `last_activity`, `phase`) is the only part that gets updated in place each turn — everything under `# Session Log` is append-only. Keep each turn's entry short and factual (what was discussed, decided, or is pending) — this is a log, not a transcript; the full conversation isn't being duplicated here, just the facts that matter for continuity.
+
 **Persistence rules:**
-- Every response updates hot.md (overwrite) — step 4 of "Before Responding"
-- Auto git commit + push to personal repo every 60 minutes
-- hot.md is NOT synced to shared venture repos (.gitignore)
+- Every response appends a new entry to hot.md (never overwrites a previous one) — step 4 of "Before Responding," via an actual tool call before drafting reply text.
+- Decisions, communications, and metrics changes commit and push immediately, every time, on both tiers — no exceptions.
+- hot.md's append also commits and pushes immediately, every response, on **both** Tier A1 and Tier A2. There is no batching window by default — the earlier version of this rule allowed hot.md specifically to lag up to 10 turns behind in Tier A2 to manage API call volume, and that was a real, avoidable data-loss window. A normal founder conversation (tens of messages, not hundreds per hour) doesn't approach GitHub's real rate limit (~5,000 authenticated requests/hour) closely enough to justify that risk. Only fall back to a short batching window in the genuinely rare case of a session sending many messages per minute for a sustained stretch (e.g. an automated loop, not a human typing) — and if that happens, say so to the founder plainly rather than silently lagging.
+- hot.md is committed to personal FHQ repo for solo ventures
+- hot.md is gitignored ONLY for shared venture repos (team ventures)
+
+### Persistence Verification (Critical)
+
+After every write tool call, VERIFY the file was actually saved:
+1. Read the file back to confirm content (or check the tool result directly if it echoes the written content)
+2. If Tier A1: run `git status` to confirm changes are staged
+3. If remote configured: `git push` (Tier A1) or confirm the API call returned success (Tier A2)
+4. NEVER assume a write succeeded — check the tool result for errors
+5. NEVER say "I'll write now" without a verifiable tool_use call
 
 ### Daily Rollover
 
 At midnight UTC (or when user says "on s'arrête la", "end session", "fhq fin de session"):
 
 ```
-1. Read hot.md
-2. Create dailies/YYYY-MM-DD.md with summary, decisions, metrics changes, next steps, communications
-3. Clear hot.md (reset to empty template)
+1. Read hot.md's full Session Log (every entry, not a mental summary of it)
+2. Create dailies/YYYY-MM-DD.md with TWO parts:
+   a. A short synthesized summary at the top (decisions, metrics changes, next steps, communications) — for fast scanning
+   b. The full, unedited Session Log entries underneath, verbatim — this is what makes the rollover lossless. The summary is a convenience, not the record; the record is the untouched log.
+3. Clear hot.md (reset to empty template with a fresh Session Log header) — safe to do now BECAUSE step 2b already preserved every entry verbatim, not because the summary captured "enough."
 4. If midnight UTC and user is mid-session: create daily, reset hot, continue
 ```
 
@@ -526,6 +557,10 @@ junio, alice
 
 **Write trigger:** Every explicit decision. Push to shared repo immediately if team venture.
 
+**Supersession is bidirectional — both files change, not just the new one.** When a new decision sets `supersedes: {old-decision-id}`, that's only half the link. Go back and update the OLD decision's file too: set its `status: superseded` and `superseded_by: {new-decision-id}`. If only the new file gets written, the old decision still reads `status: active` forever, and Decision Retrieval's "Status: active | superseded by X" (Section 11) has nothing to show for the second case — it would silently always say "active" even for decisions everyone knows are dead. This is a required part of writing a superseding decision, not an optional cleanup step.
+
+**Filename collisions are a real silent-overwrite risk.** Two decisions on the same day about a related topic (e.g. two pricing calls in one afternoon) can generate the same `{YYYY-MM-DD}-{slug}.md` name — writing the second on top of the first without anyone noticing, since a successful write looks identical whether it created a new file or clobbered an old one. Before writing any `decisions/` file, check whether that exact path already exists; if it does and its content is a genuinely different decision, append a numeric suffix (`-2`, `-3`) to the slug rather than overwriting. Never assume a filename is free just because it seems unlikely to collide.
+
 ### Metrics Format
 
 ```yaml
@@ -541,6 +576,15 @@ metrics:
   burn_monthly: 12000
   runway_months: 8
   growth_rate_mom: 0.12
+growth_track:
+  stage: null                  # G1 | G2 | G3 | G4 — Section 22
+  pmf_score: null
+  pmf_last_measured: null
+  cac: null
+  ltv: null
+  nrr: null
+  burn_multiple: null
+  rule_of_40_score: null
 ```
 
 ### Summaries (Derived Views)
@@ -562,7 +606,7 @@ The skill manages ALL git operations. The founder NEVER runs git commands.
 | Decision written | Write to `ventures/<venture>/decisions/` + sync -> `git add`, `commit`, `push` | `create_or_update_file` on `ventures/<venture>/decisions/{slug}.md` |
 | Metrics updated | Write to `ventures/<venture>/metrics.yaml` + sync -> `git add`, `commit`, `push` | `get_file_contents` for SHA, then `create_or_update_file` |
 | Communication sent | Write to `ventures/<venture>/communications/` + sync -> `git add`, `commit`, `push` | `create_or_update_file` on new file |
-| hot.md backup | Every 60 min: `git add`, `commit`, `push` to personal repo | Every 60 min: `create_or_update_file` on `hot.md` |
+| hot.md append | Every response, immediate, no batching | Every response, immediate, via `create_or_update_file` — no batching |
 | Multiple files in one turn | `git add` all, single `commit`, `push` | `push_files` — batches into one commit |
 | Daily written | Write to `ventures/<venture>/dailies/` + sync -> push | `create_or_update_file` on new daily file |
 | Session end | `git push` to all repos | Nothing extra needed |
@@ -573,7 +617,7 @@ The skill manages ALL git operations. The founder NEVER runs git commands.
 
 | File type | Strategy |
 |-----------|----------|
-| `decisions/{slug}.md` | No conflict possible (unique files per slug) |
+| `decisions/{slug}.md` | Usually no conflict (unique per slug) — but check for an existing file at that exact path first (Section 4); if two decisions collide on the same date+slug, suffix the newer one rather than overwriting |
 | `metrics.yaml` | Last-writer-wins per field — parse both, keep newest timestamp per metric |
 | `dailies/{date}.md` | Append — if same day, concatenate with separator |
 | `contacts.yaml` | Last-writer-wins per contact (by name) |
@@ -583,6 +627,20 @@ The skill manages ALL git operations. The founder NEVER runs git commands.
 **The merge is AUTOMATIC and TRANSPARENT. Never ask a human to resolve a merge conflict.**
 
 **Tier A2 note:** `create_or_update_file` fails if SHA is stale. Treat that as trigger for the field-level merge: re-fetch, apply merge rule, retry. Don't surface SHA mismatches to the founder.
+
+### Persistence Protocol
+
+**Rule: every decision, communication, metrics change, and hot.md append commits and pushes immediately, every response, no batching, no exceptions, on both Tier A1 and Tier A2.** This was previously relaxed for hot.md specifically to manage GitHub API call volume; that relaxation created a real data-loss window and has been removed (Section 4) — normal usage doesn't come close to the rate limit that exception was guarding against.
+
+After EVERY response (step 7), before moving on:
+```
+1. Confirm every write tool call from this turn returned success
+2. If Tier A1: git status to confirm staged changes, then git push
+3. If Tier A2: confirm the API call(s) returned success (check for a returned commit SHA)
+4. If anything failed: say so to the founder now, don't discover it next session
+```
+
+Why immediate persistence matters: if the session dies mid-conversation, everything up to the last successful write must be recoverable — that's the whole point, and it only holds if "immediate" actually means every turn, not "usually." GitHub's API rate limit (roughly 5,000 authenticated requests/hour) is real, but a normal founder session — tens of messages, not hundreds per hour — never gets close to it; the earlier batching exception was solving for a case that doesn't occur in practice while creating a data-loss window that does. If a session ever does send messages fast enough to approach the real limit (an automated loop, not a human), that is the one case worth batching briefly — and say so to the founder plainly when it happens, rather than silently lagging as a routine default.
 
 ---
 
@@ -759,6 +817,7 @@ profile:
 - If the founder has a pattern of skipping sacrifice, flag it MORE strongly
 - If the founder's preferred distribution is "big-fish" but the product fits "open", challenge it
 - The profile is personal — NEVER synced to shared venture repos
+- **NEVER invent a trait, blindspot, or pattern from a single session.** A `blindspots` or `learning_history` entry requires actual repeated evidence across sessions — the same discipline as never inventing `phase_history` dates (Section 3). One instance of a founder hesitating on sacrifice is not yet a "tends to skip sacrifice" pattern; it becomes one after it's actually recurred and been logged more than once. Since step 3 of "Before Responding" now checks this profile in real time to flag likely mistakes before they happen, a fabricated pattern doesn't just sit unused in a file — it actively produces false, unearned pushback on a founder who hasn't actually shown that pattern yet.
 
 ---
 
@@ -800,6 +859,8 @@ Founder B (alice):
 5. Load personal `hot.md` (private)
 
 **When co-founders actively disagree:** use Section 19 (Co-Founder Decision Facilitation).
+
+**When co-founders are on different environment tiers** (real and common — one founder on Claude Code with local git, another on claude.ai chat with only a read-only GitHub sync, Section 0/20): this is fine for reading, since both can see the shared repo's committed history. It is NOT fine to assume both can write. Before relying on a Tier B/C co-founder to log a decision or push an update themselves, check what they actually have — if their session can't write, offer to relay the content for the Tier A founder to commit instead, rather than silently expecting a write that can't happen on their end. This gap is invisible until someone's "I already saved that" turns out to have never actually persisted.
 
 ---
 
@@ -860,7 +921,8 @@ Founder: "fhq qu'est-ce qu'on a decide le 12 mars ?"
 4. If content match: show all relevant decisions
 5. If nothing found: search `dailies/` for matching date range
 6. If still nothing: search `summaries/`
-7. If still nothing: "No decision found. Would you like to search by another term?"
+7. If still nothing: search `memory/reviews/` (weekly/monthly/yearly — Section 13) for matching period or content, e.g. "qu'est-ce qu'on avait dit au bilan de mai" should find `reviews/monthly-2026-05.md`, not fail just because it's not a `decisions/` file
+8. If still nothing: "No decision found. Would you like to search by another term?"
 
 **Response format:**
 
@@ -910,6 +972,8 @@ This is the full, explicit view — `fhq` alone always gets this. A normal `fhq 
 
 Each cadence runs when the founder invokes `fhq` and enough time has passed since it last ran — checked against timestamps in `venture-profile.yaml`.
 
+**Portfolio note:** a founder running multiple ventures (Section on Portfolio / multi-venture intent, P6) still gets one cadence cycle per venture, not one combined cycle — a Daily Anchor is per-venture, and Session Start (Message Transformation) simply runs that per-venture cycle for all active ventures in one pass rather than making the founder ask for each one separately.
+
 ### Cadence Table
 
 | Horizon | Runs when | Pulls from | Founder sees |
@@ -957,12 +1021,14 @@ All four write to `ventures/<venture>/memory/reviews/`. Update `last_*_review` i
 
 1. Get current UTC time
 2. Compare with venture-profile.yaml `last_updated`
-3. If new calendar day: execute Daily Rollover, update `last_updated`, run Daily Anchor
+3. Check `manual_rollover_done` (set by a Session End command, Message Transformation) — if it matches today's date, the founder already closed today manually; skip the automatic rollover and just update `last_updated`. Otherwise, if new calendar day: execute Daily Rollover, update `last_updated`, run Daily Anchor.
 4. Check `last_weekly_review`, `last_monthly_review`, `last_yearly_review` — run whichever are due
 5. Check `opportunities.yaml` last-scan date — if due (Section 18), run Opportunity Watch
 6. If gap > 2h same day: just continue
 
-**Automatic hot.md backup:** Every 60 minutes of session, commit + push.
+This automatic check is the fallback for founders who never use the explicit Session Start / Session End commands — it makes sure nothing is lost either way, but the manual commands (Message Transformation) give a more accurate, founder-defined day boundary when used.
+
+**Automatic hot.md backup:** per the reconciled rule in Section 4.
 
 ---
 
@@ -973,7 +1039,7 @@ All four write to `ventures/<venture>/memory/reviews/`. Update `last_*_review` i
 | R1 | "Generic advice suffices — no diagnosis needed" | Phase Detection Engine REQUIRED before any advice. |
 | R2 | "I fill gaps with plausible reasons" | NEVER invent. Reference the file that should contain it. |
 | R3 | "The problem is secondary to the idea" | Genese check is MANDATORY. |
-| R4 | "Memory is optional — decisions don't need persistence" | Every decision writes a file. Hot.md backup every 60min. |
+| R4 | "Memory is optional — decisions don't need persistence" | Every decision writes a file. Hot.md persists per Section 4's reconciled rule. |
 | R5 | "Phase doesn't matter — same advice for everyone" | Different advice per phase. |
 | R6 | "Present is the only context" | Pull sync on start. Async comms. Decision retrieval. |
 | R7 | "Decisions are momentary — no need to log them" | Structured, tagged, queryable decision files. |
@@ -983,6 +1049,11 @@ All four write to `ventures/<venture>/memory/reviews/`. Update `last_*_review` i
 | R11 | "I already did step 0 in a previous turn" | Environment classification is once per session — if carried, state "Carried from <timestamp>". |
 | R12 | "I'll extract $QUERY and diagnose at the same time" | Steps must be sequential. Step -1 output feeds step 2. Order matters. |
 | R13 | "The preamble format means I did the steps" | Preamble format proves nothing. Tool_use calls prove steps. |
+| R14 | "I'll just answer from memory, research is optional" | Step 1.5 REQUIRES web research when query involves external information. |
+| R15 | "Information is enough — action can wait" | Step 6.5 REQUIRES proactive actions. Every response ends with what to do next. |
+| R16 | "I'll persist at the end of the session" | Step 7 REQUIRES persistence verification after every write batch, per Section 4's cadence rule, not "whenever." |
+| R17 | "The file probably saved, no need to check" | NEVER assume. Verify via tool result or a read-back. |
+| R18 | "This framework/company is well known, I don't need a citation" | Section 22 and Section 10 both require a specific file in `REFERENCES/cas/` for any named company — well-known is not the same as documented in this skill's own library. |
 
 ### Red Flags (Self-Check)
 
@@ -998,6 +1069,12 @@ All four write to `ventures/<venture>/memory/reviews/`. Update `last_*_review` i
 - "Nothing urgent in events" -> STOP. Did you actually scan, or assume?
 - "Preamble looks right" -> STOP. Does the phase match the actual diagnosis?
 - "I'll write to hot.md later" -> STOP. Step 4 says BEFORE drafting reply. Later is non-compliant.
+- "I'll answer from what I know" -> STOP. Step 1.5 may require web research. Did you check?
+- "Information is enough, action can wait" -> STOP. Step 6.5 requires proactive next steps.
+- "I'll verify persistence later" -> STOP. Step 7 is mandatory after every write batch.
+- "I'll just propose one action" -> STOP. Step 6.5 requires 2-3 concrete actions.
+- "The file probably saved" -> STOP. Step 7 requires verification.
+- "Everyone knows this company's story" -> STOP. Is there a file in REFERENCES/cas/? If not, don't cite it as verified.
 
 ### Violation Enforcement
 
@@ -1008,14 +1085,18 @@ A response is NON-COMPLIANT if it proceeds without completing ALL required steps
 | `$QUERY` not extracted (step -1) | Cannot determine intent → STOP. Re-read Message Transformation. |
 | Environment not classified (step 0) | May write to wrong tool → STOP. Run self-test (Section 20). |
 | Time check / event scan (step 1) | Missed deadlines, stale context → STOP. Get current UTC now. |
+| Strategic research not done (step 1.5) | Answer is based on stale or invented data → STOP. Use web_search/web_fetch. |
 | Phase not diagnosed (step 2) | Advice is generic, not phase-specific → STOP. Read venture files first. |
 | Invariant check not done (step 3) | May advise a historically-proven mistake → STOP. Check Section 10. |
 | No tool_use call to write (step 4) | Nothing persists → STOP. Call write tool before continuing. |
 | Preamble missing or malformed (step 5) | No context for next session → STOP. Emit preamble as first response line. |
 | Response contradicts diagnosis (step 6) | Action doesn't match phase → STOP. Realign or explain mismatch. |
-| Compliance not verified (step 7) | False sense of completion → STOP. Run the checklist explicitly. |
+| No proactive actions (step 6.5) | Ends with information instead of action → STOP. Propose 2-3 next steps. |
+| Persistence not verified (step 7) | Writes may not have saved → STOP. Verify via tool result or read-back. |
+| Compliance not verified (step 8) | False sense of completion → STOP. Run the checklist explicitly. |
 
-**Any non-compliant response must be retracted and re-done before proceeding. The preamble alone does not certify compliance — tool_use calls + step 7 verification do.**
+**Any non-compliant response must be retracted and re-done before proceeding. The preamble alone does not certify compliance — tool_use calls + step 8 verification do.**
+
 
 ---
 
@@ -1050,6 +1131,7 @@ venture:
     last_monthly_review: null
     last_yearly_review: null
     last_opportunity_scan: null
+    manual_rollover_done: null   # set by Session End command (Message Transformation) — prevents double rollover
 ```
 
 ### TEMPLATES/decision.md
@@ -1131,6 +1213,7 @@ decisions_made: []
   reason: ""
   action: ""
   status: ""
+  trigger: ""            # time-based | phase-transition | lost-opportunity | direct-question | stuck-signal (Section 18)
 ```
 
 ### TEMPLATES/weekly-summary.md
@@ -1222,6 +1305,8 @@ venture: {name}
 - <new entries in founder-profile.yaml learning_history>
 ```
 
+---
+
 ## 16. Phase Playbooks
 
 Diagnosing the phase (Section 3) is necessary but not sufficient. This section is the accompaniment layer: what to actually do, and what doing it *wrong* for this phase looks like.
@@ -1236,7 +1321,7 @@ Diagnosing the phase (Section 3) is necessary but not sufficient. This section i
 | **Distribution** | Pick ONE pattern: Big Fish, Niche, or Open. Don't run all three at once. | Running paid ads or mass outreach with no prior relationship. | Treating distribution as marketing spend instead of founder personally reaching people. |
 | **Early Believer** | Run Positioning Audit before any contact. Pick channel matching actual assets. | Cold-emailing broadly with no audit done. | "I'll cold email 100 investors" — or refusing to make contact because positioning isn't perfect. |
 | **Incorporation** | Personal capital -> incorporate day one. External capital -> after yes. No urgent need -> can wait years. | Incorporating elaborately before any problem or demo exists. | Incorporation as substitute for progress. |
-| **Inflexion** | Track runway, not vibes. Nothing to force — survive long enough to reach it. | Trying to schedule or predict the inflexion point. | Planning for a specific breakout date is itself misaligned. |
+| **Inflexion** | Track runway, not vibes. Nothing to force — survive long enough to reach it. Once real revenue and growth-stage fundraising conversations start, the venture has effectively moved into the Growth Track (Section 22). | Trying to schedule or predict the inflexion point. | Planning for a specific breakout date is itself misaligned. |
 
 ### Skipped-Phase Detection
 
@@ -1247,15 +1332,31 @@ Don't only check what phase are we in — check did we actually do the earlier p
 
 When you find a skipped phase, ask the founder to fill in the gap in phase_history.
 
+### Phase Transition Map
+
+Used by step 5 (Emit the preamble) to show the founder their position and next step.
+
+| # | Phase | Action (do this NOW) | Next phase | Transition trigger |
+|---|-------|---------------------|------------|-------------------|
+| 1 | **Genese** | State your problem in one sentence. Talk to 5 people who live it. | Sacrifice | You name the specific irreversible thing you're willing to burn |
+| 2 | **Sacrifice** | Set a date to burn something real. Announce it publicly. | Demo | You have something to show — a proto, a team, or your credentials |
+| 3 | **Demo** | Build the smallest proof. Ship it ugly. Get feedback. | Distribution | You have at least 1 person/customer saying "I need this" |
+| 4 | **Distribution** | Pick ONE channel: Big Fish, Niche, or Open. Reach out personally. | Early Believer | Someone with means (investor, partner, grant) says yes |
+| 5 | **Early Believer** | Run Positioning Audit. Contact via prepared channels. | Incorporation | You have a clear reason to formalize (commitment received, contract, investors require it) |
+| 6 | **Incorporation** | Formalize structure. Choose trigger-based timing. | Inflexion | An unpredictable event changes your trajectory |
+| 7 | **Inflexion** | Track runway. Survive long enough. Nothing to force. | Growth Track (§22) | Real revenue and growth-stage fundraising conversations begin |
+
 ---
 
 ## 17. Pivot-or-Persevere Protocol
 
 Phase diagnosis tells you *where* a venture is. It doesn't tell you whether the venture should keep going.
 
+These stuck signals also feed the Event & Notification Engine (Section 21) as Urgent items the moment they cross their threshold — this protocol doesn't wait to be asked.
+
 ### Stuck Signals (when to run this)
 
-- No new decision, metric, or daily entry related to forward progress in the active phase for longer than the founder's historical pattern would predict.
+- No new decision, metric, or daily entry related to forward progress in the active phase for longer than the founder's historical pattern would predict. **If this is the founder's first venture (no `learning_history` entries yet to predict from), default to 45 days of no forward-progress evidence in the active phase** — a reasonable floor until the founder actually has a pattern on record; don't skip this signal just because there's nothing yet to compare against.
 - The founder describes the same blocker across 3+ sessions without a logged attempt to resolve it differently.
 - Metrics moving in sustained negative direction (trend, not single bad week).
 - Founder directly asks whether to pivot, quit, or keep going.
@@ -1277,21 +1378,28 @@ Never perform this protocol silently — the founder needs to see the restated p
 
 Proactive scanning within the real limits of what an LLM skill can do (no background process).
 
-### Cadence
+### When to scan — two triggers, not one
 
-- Check `opportunities.yaml` last-updated at session start (fold into Time Check, Section 13).
-- If >7 days (solo) or >14 days (team) since last scan, and web search is available, run one before session ends.
-- If no web search available, say so.
+**Time-based (the floor, not the whole logic):** check `opportunities.yaml` last-updated at session start (fold into Time Check, Section 13). If >7 days (solo) or >14 days (team) since last scan, and web search is available, run one before session ends.
 
-### What to look for, tied to phase and sector
+**Situation-based (run regardless of the timer, because the opportunity landscape just changed):**
+- The phase just transitioned (Section 3/16) — what's worth looking for at the new phase is different from the old one; don't wait up to 7 days to notice.
+- A tracked opportunity was just marked lost, rejected, or its deadline passed unused (Section 21) — the founder likely needs a replacement, not just "wait for the next scheduled scan."
+- The founder just asked about fundraising, positioning, or a specific type of program directly — answer that question with a real scan, not last week's cached results.
+- A stuck signal fired (Section 17) — a founder reconsidering direction may benefit from seeing what's actually available before deciding, not after.
 
+If no web search is available in this environment, say so plainly rather than presenting stale or invented opportunities — this applies to both triggers.
+
+### What to search for — be specific to what actually changed, not a generic query
+
+Don't run "startup accelerators [sector]" every time regardless of context. Before searching, state in one line what specifically prompted this scan (new phase, a lost opportunity, a direct question, a stuck signal) and let that shape the query:
 - **Genese/Sacrifice/Demo**: communities, hackathons, competitions relevant to the sector.
-- **Distribution/Early Believer**: accelerators, grants, angel networks matching founder's assets.
-- **Incorporation/Inflexion**: later-stage funds, strategic partners, acquisition-adjacent signals.
+- **Distribution/Early Believer**: accelerators, grants, angel networks matching founder's assets — and if this scan was triggered by a specific rejection, search for alternatives that don't share whatever made the founder a bad fit for the one that said no.
+- **Incorporation/Inflexion/Growth Track (§22)**: later-stage funds, strategic partners, acquisition-adjacent signals — and at G1-G2 specifically, PMF-adjacent communities and beta-tester pools before investor-facing opportunities.
 
 ### Logging
 
-New finds go into `opportunities.yaml` with honest `fit_score` and `reason`. Mention briefly at end of response, or at top if near-term deadline.
+Every deadline written into `opportunities.yaml` is automatically tracked by the Event & Notification Engine (Section 21) from that point on. New finds go into `opportunities.yaml` with honest `fit_score` and `reason` — and a `trigger` field noting what prompted the scan (time-based or which situation), so a later review can tell whether the situation-based triggers are actually pulling their weight. Mention briefly at end of response, or at top if near-term deadline.
 
 ---
 
@@ -1300,10 +1408,10 @@ New finds go into `opportunities.yaml` with honest `fit_score` and `reason`. Men
 What happens when two founders actively disagree.
 
 1. **State both positions plainly** — if only one founder is present, ask them to state the other's position fairly.
-2. **Check both against invariants and case library** — not to declare a winner, but as neutral tiebreaker.
+2. **Check both against invariants and case library** — not to declare a winner, but as neutral tiebreaker. Cite a specific file from `REFERENCES/cas/`; say plainly if none applies.
 3. **Lay out the actual trade-off**, not a false consensus.
 4. **Force an actual decision** — use Decision Format (Section 4), tagged with both names. If still disagree, log as `status: contested`.
-5. **Set a revisit_date** if made under real uncertainty.
+5. **Set a `revisit_date`** (Section 4's decision template) if made under real uncertainty — this feeds the Event & Notification Engine (Section 21) directly.
 
 ---
 
@@ -1334,6 +1442,7 @@ A unifying pass so nothing tracked in FHQ goes silent.
 | Cadence due | `venture-profile.yaml` → `cadence.*` | Handled by Section 13 directly |
 | Unread communication | `communications/*.md` → `status: unread` | Important |
 | Phase anniversary / milestone | `phase_history` dates | Informational only |
+| Missing required document (§23) | Comparison of §23's per-phase table against actual files | Important |
 
 ### The scan (part of Before Responding, step 1)
 
@@ -1348,7 +1457,7 @@ Once per session, scan the sources above:
 - **Important**: fold into Daily Anchor if not run yet today; otherwise mention once before answering.
 - **Informational**: only in Weekly/Monthly/Yearly Reviews.
 
-Tag vocabulary: `[DEADLINE]`, `[FOLLOW-UP]`, `[REVISIT]`, `[STUCK]`, `[RUNWAY]`, `[CONTRADICTION]`.
+Tag vocabulary: `[DEADLINE]`, `[FOLLOW-UP]`, `[REVISIT]`, `[STUCK]`, `[RUNWAY]`, `[CONTRADICTION]`, `[DOCUMENT]`.
 
 ### Don't repeat yourself
 
@@ -1363,56 +1472,91 @@ Per-session scan triggered by `fhq`, not a real background alert. If an Urgent i
 
 ---
 
-## 22. Growth Track
+## 22. Growth Track (Seed → Series A → Series B+)
 
-Frameworks for what comes after the early believer — seed-to-scale. These are widely-used industry heuristics, verified against established research rather than company-by-company case studies (unlike sections 1-21). Confidence level noted per framework.
+Frameworks for what comes after the early believer — seed-to-scale. These are well-established industry heuristics (Sean Ellis's PMF survey, Startup Genome's premature-scaling research, Bessemer's T2D3, the Rule of 40), verified here against a specific set of company histories in `REFERENCES/cas/` — five so far (Quibi, Zendesk, Superhuman, Slack, Webvan), narrower than the pre-seed model's case count. **Any company named below without a file in `REFERENCES/cas/` should not be treated as verified — check the folder, not this paragraph, for the current real list.**
 
 ### G1 — Seed: finding product-market fit
 
-**Sean Ellis Test** — Ask active users: "How would you feel if you could no longer use [product]?"
-- **40%+ "very disappointed"** is the validated PMF threshold (tested across hundreds of startups).
-- Slack scored 51% before public launch.
-- Superhuman went from 22% to 58% after narrowing to email-power-user target.
-- Notion never published a score, but community behavior (users creating templates, recruiting teammates) is a valid qualitative proxy.
-- Zendesk never published a score either, but 300% organic growth in year 3 is an equivalent behavioral signal.
-- Below 40%: the product solves a nice-to-have problem, not a must-have one. Fix retention before spending on acquisition.
+**Sean Ellis Test** — Ask active users: "How would you feel if you could no longer use [product]?" 40%+ "very disappointed" is the widely-used PMF threshold, benchmarked across roughly a hundred startups by Sean Ellis.
+- Slack scored 51% via an independent 2015 survey of 731 users before public launch (`16-slack.md`).
+- Superhuman went from 22% to 58% after narrowing to a specific power-user segment (`15-superhuman.md`).
+- Below 40%: the product solves a nice-to-have problem, not a must-have one. Segment the respondents and find who already loves it, rather than diluting the product to please everyone (Superhuman's approach) or abandoning the survey as unreliable.
 
-**Honest limit**: this test was developed for B2B/SaaS products. For marketplaces, look for repeat-purchase rate instead. For deep-tech, look for research partners returning for a second engagement.
+**Honest limit, sourced**: the test is a snapshot, not a guarantee, and it's most reliable for B2B/SaaS products with an engaged existing user base. It can also under-read a product riding a category-level tailwind — worth remembering rather than treating 40% as a universal pass/fail regardless of context. For marketplaces, look at repeat-purchase rate instead; for deep-tech, look at research partners returning for a second engagement.
 
 ### G2 — Series A: repeatable growth
 
-**T2D3 (triple-triple-double-double-double)**: the classic SaaS growth pattern — triple ARR two years in a row, then double three years running.
-- Works: Slack ($12M→$36M→$100M→$200M→$400M→$800M+), Zoom (pre-COVID T2D3), Salesforce (original T2D3 template).
-- **3-3-2-2-2 variant**: more capital-efficient post-2022 correction, same shape with shallower early slope.
+**T2D3 (triple-triple-double-double-double)**: the classic SaaS growth pattern — triple ARR two years running, then double for three. Built partly from Zendesk's own growth curve (`14-zendesk.md`: ~$15.6M in 2011 to ~$38.2M in 2012, ~$127M at 2014 IPO, ~$598.7M by 2018) — Zendesk is where part of the benchmark comes from, not just an example measured against it.
+- **3-3-2-2-2 variant**: a more capital-efficient pace that's replaced the original T2D3 expectation since the 2022 funding correction.
+- The pattern only holds starting from real, already-validated ARR (roughly $1-2M ARR) — i.e., after PMF is confirmed, not during the search for it.
 
-**Not every great company follows T2D3**: two equally valid alternatives confirmed in the case library:
-- **Steady compounder** (Zendesk): 2-3x early, then 30-40% annually for a decade. Less flashy, equally valuable.
-- **Delayed hockey stick** (Notion): $3M→$67M over 3 years (slow), then $67M→$600M in 3 years (explosive). Community-led growth has a longer fuse.
+**The real killer — premature scaling**: Startup Genome's research across 3,200 startups found roughly 70-74% of failures trace to spending on growth before PMF is confirmed. Webvan (`17-webvan.md`) is the sharpest documented case: $830M raised, expansion into 10 cities before proving the model in even one, and a board member (Sequoia's Mike Moritz) later admitting directly that the company "committed the cardinal sin of retail" by expanding before demonstrating success in its first market. Quibi (`13-quibi.md`) is the modern equivalent: $1.75B raised on founder reputation alone, no product-market fit ever measured, shut down after 6 months.
 
-**The real killer — premature scaling**: Startup Genome's research across 3,200 startups found 70-74% of failures come from spending on growth before reaching PMF. The framework is useless if G1 hasn't been confirmed first. Webvan (026) is the canonical example: $830M raised, 10 cities scaled, never measured PMF once.
-
-**Adaptation for non-SaaS**: marketplace ventures should measure Gross Merchandise Volume (GMV) growth and take-rate stability. Service businesses measure billable utilization rate.
+**Adaptation for non-SaaS**: marketplace ventures should measure Gross Merchandise Volume (GMV) growth and take-rate stability as volume increases, not ARR. Service/broker models should check whether per-transaction economics hold at higher volume, not just whether volume itself is growing.
 
 ### G3 — Series B/C: efficient scale
 
-**Rule of 40**: revenue growth % + profit margin % >= 40.
-- A mature company growing 30% with a 10% profit margin passes. A company growing 80% with a -40% margin also passes.
-- **Critical nuance**: the Rule of 40 was designed for mature companies, not seed or early Series A. Applying it to a pre-PMF startup measures the wrong thing at the wrong time.
-
-**When it becomes relevant**: once the unit economics are proven (G1 passed) and the growth engine is repeatable (G2 confirmed). Before that, growth rate matters more than the combined score.
+**Rule of 40**: revenue growth % + profit margin % ≥ 40. **Critical nuance, stated plainly**: this benchmark was built for mature companies with an already-validated customer base — applying it to a seed or early Series A company measures the wrong thing at the wrong time and can push a founder toward premature profitability focus before growth has had a real chance. It becomes relevant once G1 is passed and G2's growth engine is repeatable, not before.
 
 ### G4 — Growth / late-stage: governance maturity
 
-The predictable signal is **delegation**: the point where sales close without the founder, decisions are made without the founder's direct input, and the org chart has 3+ levels. This is a positive milestone, not a loss of control.
-
-Governance markers for this stage:
-- Board with independent members (not just founders and investors).
-- Functional leads (CFO, CRO, CPO) with actual P&L autonomy.
-- Compensation and hiring delegated to function heads.
+The predictable signal is delegation: sales closing without the founder present, decisions made without the founder's direct input, and real management layers below the founder. This is a milestone, not a loss of control. Governance markers: a board with independent members (not just founders and investors), functional leads with real P&L autonomy, hiring and comp delegated to function heads.
 
 ### Honesty about confidence
 
-These frameworks are well-established in venture practice and backed by research (Sean Ellis, Startup Genome, Bessemer's Rule of 40). **The core frameworks have been verified against 8 growth-stage case studies in `REFERENCES/cas/` (021 through 028) — Slack, Superhuman, Zoom, Salesforce, Quibi, Zendesk, Webvan, and Notion.** These cover: Sean Ellis threshold validation (Slack 51%, Superhuman 22→58%), T2D3 success (Slack, Zoom, Salesforce), T2D3 non-examples (Zendesk steady compounder, Notion delayed hockey stick), community-led growth (Notion), premature scaling (Webvan), and Rule of 40 maturity (Zoom, Salesforce, Zendesk). The confidence gap with Sections 1-21 (verified across 20 pre-seed cases) is narrower now but not closed — the growth-stage cases cover the frameworks adequately but the sample (8 vs 20) remains smaller.
+Sections 1-21 are verified case-by-case against pre-seed company histories. This section's frameworks are legitimate and widely used by real operators (Sean Ellis, Startup Genome, Bessemer), but the case-by-case verification here currently covers 5 companies, not the pre-seed model's full count. Treat this section as a competent, partially-verified starting framework — and if a company is named anywhere in FHQ without a matching file in `REFERENCES/cas/`, that's a discipline gap to fix (add the file with real sources), not a shortcut to take for granted.
+
+
+---
+
+## 23. Venture Documents — What Each Phase Actually Needs, and Why
+
+Diagnosing the phase and giving a playbook action (Section 16) tells a founder what to *do*. This section covers what a founder needs to *have written down* — and, critically, why each document exists, what it's actually for, what a botched version looks like, and what happens when it's missing or wrong. An experienced founder often skips the wrong things confidently; an inexperienced founder often over-invests in the wrong document entirely (a 40-page business plan when a one-pager was needed, or vice versa). This section exists so neither happens by accident.
+
+### Auto-Creation and the Document Check (step 2a of "Before Responding")
+
+After phase diagnosis (step 2), check `ventures/<active-venture>/` for the required documents of every phase up to and including the current one (a venture in Distribution should have Genese's and Sacrifice's documents too, not just Distribution's). For each missing one:
+1. Name it and explain **why it matters at this phase** — not just "you're missing X," but what decision or risk it exists to address, pulled from the table below.
+2. Ask before creating — never write a founder's problem statement or vision for them without their input; these documents are only useful if they reflect the founder's actual thinking, not FHQ's guess at it.
+3. If they say yes, create it using the format the audience actually needs (see "Matching document to audience" below) — and use the right tool: `.docx` for business plans, executive summaries, and formal written documents (via this environment's docx skill); `.pptx` for pitch decks and board decks (via the pptx skill); `.xlsx` for financial models and cap tables (via the xlsx skill). Don't hand-roll a spreadsheet in markdown when a real one is what's needed.
+
+### Per-Phase Requirements, With the Why
+
+| Phase | Document | What it's actually for | Common botch | Consequence of skipping or botching it |
+|-------|----------|------------------------|---------------|------------------------------------------|
+| **Genese** | Problem statement (`memory/facts/problem-statement.md`) | Forces the problem into one falsifiable sentence — the thing every later decision gets checked against | Writing a solution description ("we build an AI tool for X") instead of a problem ("X takes 3 hours and shouldn't") | Every later document (pitch, business plan) inherits a fuzzy foundation, and Section 10's Contradiction Protocol has nothing concrete to check decisions against |
+| **All phases, established early** | Vision (`memory/09-vision.md`) | Long-horizon "why" — what the world looks like if this works in 5-10 years. Used for hiring, for public narrative, for founder motivation on hard days | Generic enough to describe any company ("we empower people to reach their potential") | Employees and early believers can't tell what makes this venture different from a hundred others with the same vague words |
+| **All phases, established early** | Mission (`memory/10-mission.md`) | The daily "what" — distinct from vision. What the venture actually does, today, for whom | Confusing mission with vision (a 10-year aspiration dressed up as a daily activity) | Team and hires are unclear on what to actually work on this quarter |
+| **Demo onward** | North Star metric (`memory/12-north-star.md`) | The single number that means the venture is winning — forces a choice about what actually matters when everything seems urgent | Picking a vanity metric (downloads, signups) instead of one tied to real value delivered (retained, paying, referring users) | Team optimizes for a number that looks good and means nothing — classic Goodhart's Law failure |
+| **Sacrifice** | Sacrifice declaration (`memory/facts/sacrifice-declaration.md`) | Makes the invariant concrete and checkable later — what was actually burned, when | Vague ("I'm very committed") instead of specific (quit date, resignation letter, capital committed) | Section 10 can't verify the sacrifice invariant later without a specific record — flags a violation it shouldn't, or misses one it should catch |
+| **Demo** | Demo log (`memory/facts/demo-log.md`) | Tracks what was actually built and what real feedback it got — the evidence base for Distribution and Early Believer claims later | Recording only positive feedback, or none at all | No evidence trail when later asked "how do you know people want this" |
+| **Distribution** | Distribution strategy (`memory/facts/distribution-strategy.md`) | Forces an explicit choice of ONE pattern (Big Fish/Niche/Open) instead of a vague "we'll figure out marketing" | Writing a marketing plan (channels, budget) before choosing the underlying pattern | Spend goes to paid acquisition before any of the three patterns has been tested for free, exactly the mistake Section 16 flags |
+| **Early Believer** | Pitch deck (`early-believer/pitch-deck.md` or a real `.pptx`) | Gets a meeting, not a signed check — built to be narrated live, not read cold | Text-dense slides that try to be a standalone document; no clear ask; buries the team's credibility; no evidence of the Demo | Investors skim past it in seconds; the founder never gets to the room where the real conversation happens |
+| **Early Believer (grant/bank/corporate audiences only)** | Executive summary or full business plan | See "Matching document to audience" below — this is the single most common over- or under-investment mistake inexperienced founders make | Writing a 40-page business plan for a VC who wanted a 1-pager and a deck, or a thin 1-pager for a grant committee that legally requires a full plan | Weeks lost producing the wrong artifact for the actual audience, or immediate rejection by a gatekeeper who never got what they needed to say yes |
+| **Early Believer onward** | Cap table (`.xlsx`, via the xlsx skill) | Tracks ownership and dilution precisely — the record every future round, every co-founder conversation, and every option grant depends on | Not tracked rigorously from day one; verbal equity promises never formalized | Co-founder disputes with no record to resolve them (exactly what Section 19 exists to prevent, but can't if there's nothing written down); errors compound at every subsequent round |
+| **Early Believer onward** | Financial model (`.xlsx`, via the xlsx skill) | Forces explicit, examinable assumptions about unit economics and runway — investors use it to pressure-test judgment, not to believe the specific numbers | A hockey-stick with no assumption transparency, or an overly conservative model that signals lack of ambition | Can't answer basic questions about runway or unit economics under scrutiny — a credibility problem, not just a numbers problem |
+| **Incorporation** | Incorporation plan (`memory/facts/incorporation-plan.md`) | Records the actual decision (timing, structure, capital source) against Section 16's day-one/trigger/ultra-tardif logic | Incorporating elaborately with no record of *why this timing* | No way to later check whether the incorporation-timing invariant was actually followed or just happened by default |
+| **Series A onward (§22)** | Data room | A structured repository (financials, cap table, contracts, IP, metrics) that speeds up due diligence | Assembling it reactively once a term sheet is already on the table | Weeks of lost momentum during exactly the period when speed matters most |
+
+### Matching Document to Audience (the mistake inexperienced founders make most often)
+
+Not every audience wants the same document, and producing the wrong one is a bigger waste of time than producing nothing:
+- **Most pre-seed/seed VCs**: a pitch deck (10-15 slides, built to be narrated) plus a one-page summary. They do not want a 40-page business plan and often won't read one.
+- **Grant programs, government funding, some corporate partnerships** (relevant, for instance, to R&D-heavy or regulated ventures): frequently *require* a formal business plan with financial projections, market analysis, and team bios as a hard eligibility criterion, not a nice-to-have — check the actual requirements before assuming a deck suffices.
+- **Banks / debt financing**: want a business plan with conservative, defensible financial projections — optimism that works in a VC pitch can actively hurt credibility here.
+- **Angel investors from a personal network**: sometimes need nothing more than a clear one-pager and a conversation — over-formalizing can read as inexperience in this context, not diligence.
+
+If it's unclear which audience the founder is preparing for, ask before producing anything — building the right document for the wrong audience is still the wrong document.
+
+### Term Sheets — Understanding, Not Just Having
+
+Once a term sheet is on the table (Early Believer phase or Growth Track), the job isn't to produce a document — it's to make sure the founder actually understands what's in the one they're about to sign. FHQ can explain what terms like liquidation preference, pro-rata rights, board composition, anti-dilution provisions, and vesting schedules mean and what's typical in the current market — but **FHQ is not a lawyer and this is not legal advice.** Always say so plainly and recommend the founder have an actual startup lawyer review any term sheet before signing, regardless of how well they understand the concepts. Understanding what a clause means is not the same as knowing whether a specific negotiated version of it is fair.
+
+### Auditing an Existing Document
+
+A founder who already has a document doesn't need FHQ to write a new one — they need it checked against what's actually required for their phase and audience. Review against: does it match the actual problem/phase on file (not a different pitch than what venture-profile.yaml documents)? Does it match the audience it's headed to (see the table above)? Is it missing the load-bearing evidence (Demo log, real traction) rather than just asserting claims? Flag gaps specifically rather than giving generic writing feedback — a founder who already wrote something wants to know what's structurally missing, not a style critique.
+
 
 ---
 
@@ -1429,3 +1573,5 @@ These frameworks are well-established in venture practice and backed by research
 | Decisions are lost | Decisions are structured, tagged, queryable |
 | Sacrifice is optional | Sacrifice is required, tracked |
 | Phase is ignored | Phase is diagnosed BEFORE any advice |
+| Growth stage is unaddressed | Seed-through-Series-B frameworks, confidence-labeled (§22) |
+| Founder writes documents blind | Every phase's required documents explained — what, why, for whom (§23) |
