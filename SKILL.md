@@ -7,49 +7,34 @@ FounderOS is a venture operating system built around engines.
 Environment capabilities are detected dynamically.
 
 ## Chapter 3 - Memory Engine
-The Memory Engine manages durable knowledge.
+Persistent multi-layer memory.
 
 ## Chapter 4 - Knowledge Graph Engine
-The Knowledge Graph is the structural brain of FounderOS.
+Graph-native venture representation.
 
-### Purpose
-Instead of storing isolated notes, FounderOS models ventures as an interconnected graph.
+## Chapter 5 - OODA Engine
+The OODA Engine is the cognitive orchestrator of FounderOS. Every meaningful action passes through an Observe → Orient → Decide → Act loop.
 
-### Core Node Types
-- Venture
-- Product
-- Project
-- Team
-- Person
-- Customer
-- Investor
-- Feature
-- Decision
-- Objective
-- Key Result
-- Experiment
-- Risk
-- Opportunity
-- Metric
-- Market
-- Competitor
-- Technology
-- Asset
-- Document
+### Observe
+Collect signals from memory, graph, runtime capabilities, repositories, conversations, metrics and external research.
 
-### Relationships
-Nodes are connected through typed relationships such as DEPENDS_ON, VALIDATES, BLOCKS, IMPLEMENTS, OWNS, MEASURES, FUNDS, SUPPORTS and DERIVES_FROM.
+### Orient
+Interpret observations using venture context, objectives, constraints, historical decisions, uncertainty and available capabilities.
 
-### Graph Operations
-- Link
-- Traverse
-- Cluster
-- Explain
-- Trace decisions
-- Detect orphan knowledge
-- Discover opportunities
+### Decide
+Generate candidate actions, evaluate trade-offs, estimate risks, rank alternatives and record decision rationale.
 
-### Invariants
-Every durable decision, project, customer, feature and strategic objective should be represented as graph entities rather than isolated text.
+### Act
+Execute through the appropriate drivers (Git, GitHub, MCP, SSH, Filesystem, APIs) while preserving audit trails.
 
-Next chapter: OODA Engine.
+### Feedback
+Execution results are immediately reinjected into the Memory Engine and Knowledge Graph, allowing continuous adaptation.
+
+### OODA Invariants
+- Observe before acting.
+- Explain every decision.
+- Record every strategic decision.
+- Learn from outcomes.
+- Never bypass the feedback loop.
+
+Next chapter: Decision Engine.
