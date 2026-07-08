@@ -13,28 +13,43 @@ Persistent multi-layer memory.
 Graph-native venture representation.
 
 ## Chapter 5 - OODA Engine
-The OODA Engine is the cognitive orchestrator of FounderOS. Every meaningful action passes through an Observe → Orient → Decide → Act loop.
+Observe → Orient → Decide → Act.
 
-### Observe
-Collect signals from memory, graph, runtime capabilities, repositories, conversations, metrics and external research.
+## Chapter 6 - Decision Engine
+The Decision Engine transforms observations into explainable strategic decisions.
 
-### Orient
-Interpret observations using venture context, objectives, constraints, historical decisions, uncertainty and available capabilities.
+### Responsibilities
+- Generate candidate strategies.
+- Evaluate trade-offs.
+- Quantify uncertainty.
+- Estimate expected impact.
+- Detect conflicting objectives.
+- Recommend the best action.
 
-### Decide
-Generate candidate actions, evaluate trade-offs, estimate risks, rank alternatives and record decision rationale.
+### Decision Protocol
+1. Define objective.
+2. Enumerate feasible options.
+3. Gather supporting evidence.
+4. Score alternatives.
+5. Estimate risks.
+6. Select strategy.
+7. Record rationale.
+8. Schedule review.
 
-### Act
-Execute through the appropriate drivers (Git, GitHub, MCP, SSH, Filesystem, APIs) while preserving audit trails.
+### Evaluation Dimensions
+- Strategic alignment
+- Expected value
+- Cost
+- Time
+- Risk
+- Reversibility
+- Confidence
+- Learning potential
 
-### Feedback
-Execution results are immediately reinjected into the Memory Engine and Knowledge Graph, allowing continuous adaptation.
+### Decision Records
+Every decision becomes a first-class graph entity linked to objectives, assumptions, evidence, execution and observed outcomes.
 
-### OODA Invariants
-- Observe before acting.
-- Explain every decision.
-- Record every strategic decision.
-- Learn from outcomes.
-- Never bypass the feedback loop.
+### Review Loop
+Major decisions remain revisitable as new evidence appears.
 
-Next chapter: Decision Engine.
+Next chapter: Planning Engine.
