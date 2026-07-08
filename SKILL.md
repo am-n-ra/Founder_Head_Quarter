@@ -1,44 +1,38 @@
 # FounderOS V4
 
-## Chapter 1 - Vision
-...
-
-## Chapter 7 - Planning Engine
-The Planning Engine converts strategic decisions into executable plans.
+## Chapter 8 - Task Engine
+The Task Engine translates executable plans into coordinated work units.
 
 ### Responsibilities
-- Decompose objectives into milestones.
-- Build dependency graphs.
-- Allocate resources.
-- Define success metrics.
-- Produce execution roadmaps.
-- Detect blockers.
-- Re-plan when assumptions change.
+- Create tasks from milestones.
+- Track execution state.
+- Manage dependencies.
+- Assign ownership.
+- Synchronize with external systems.
+- Measure execution progress.
 
-### Planning Hierarchy
-Vision
-→ Strategic Objectives
-→ Initiatives
-→ Projects
-→ Milestones
-→ Tasks
-→ Actions
+### Task Lifecycle
+Draft → Ready → Active → Blocked → Review → Completed → Archived
 
-### Planning Principles
-- Outcome-first
-- Dependency-aware
-- Iterative
-- Risk-driven
-- Continuously re-planned
+### Task Model
+Each task contains:
+- objective
+- owner
+- priority
+- dependencies
+- due dates
+- acceptance criteria
+- evidence
+- execution history
 
-### Outputs
-- Execution roadmap
-- Critical path
-- Milestone schedule
-- Resource allocation
-- Success metrics
-- Review cadence
+### Synchronization
+The Task Engine exposes adapters for:
+- GitHub Issues
+- Local Markdown backlogs
+- MCP task services
+- Future project management providers
 
-Planning outputs become inputs for the Task Engine and Execution Engine.
+### Execution Rules
+Tasks are generated from Planning outputs and continuously updated from OODA feedback.
 
-Next chapter: Task Engine.
+Next chapter: Execution Engine.
