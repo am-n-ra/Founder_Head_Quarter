@@ -25,24 +25,31 @@ FounderOS is a venture operating system built around engines, durable memory and
 - Execution Engine
 
 ## Chapter 2 - Runtime & Capability Layer
-FounderOS never assumes a fixed execution environment. At startup it detects available capabilities and dynamically adapts its behavior.
+FounderOS never assumes a fixed execution environment.
 
-### Runtime Detection
-- Chat-only
-- Local filesystem
-- Git repository
-- GitHub connector
-- MCP servers
-- SSH shell
-- Docker/container runtime
+## Chapter 3 - Memory Engine
+The Memory Engine is the persistent cognitive substrate of FounderOS.
 
-### Capability Model
-Capabilities are advertised rather than assumed. Engines request capabilities through an abstraction layer instead of directly invoking tools.
+### Objectives
+- Preserve knowledge across sessions.
+- Separate transient context from durable facts.
+- Record decisions and their rationale.
+- Track venture evolution over time.
 
-### Drivers
-Drivers provide a uniform interface for Git, GitHub, MCP, SSH, Filesystem and future integrations.
+### Memory Layers
+- Working Memory: current execution context.
+- Episodic Memory: events, meetings, conversations and milestones.
+- Semantic Memory: stable knowledge about the venture, products, users and technology.
+- Procedural Memory: workflows, playbooks, operating procedures and skills.
+- Decision Memory: every strategic decision with assumptions, alternatives and outcomes.
 
-### Degraded Modes
-If a capability is unavailable, the Kernel selects the highest compatible execution strategy while preserving correctness and auditability.
+### Memory Objects
+Each memory object owns an identifier, timestamps, provenance, confidence score, relationships and lifecycle state.
 
-Next chapter: Memory Engine.
+### Lifecycle
+Capture → Validate → Link → Persist → Retrieve → Archive.
+
+### Retrieval
+Retrieval is semantic, graph-aware and recency-aware instead of relying only on keyword search.
+
+Next chapter: Knowledge Graph Engine.
