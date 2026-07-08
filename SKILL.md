@@ -24,4 +24,25 @@ FounderOS is a venture operating system built around engines, durable memory and
 - Collaboration Engine
 - Execution Engine
 
-Further chapters will extend this document until FHQ3 is fully superseded.
+## Chapter 2 - Runtime & Capability Layer
+FounderOS never assumes a fixed execution environment. At startup it detects available capabilities and dynamically adapts its behavior.
+
+### Runtime Detection
+- Chat-only
+- Local filesystem
+- Git repository
+- GitHub connector
+- MCP servers
+- SSH shell
+- Docker/container runtime
+
+### Capability Model
+Capabilities are advertised rather than assumed. Engines request capabilities through an abstraction layer instead of directly invoking tools.
+
+### Drivers
+Drivers provide a uniform interface for Git, GitHub, MCP, SSH, Filesystem and future integrations.
+
+### Degraded Modes
+If a capability is unavailable, the Kernel selects the highest compatible execution strategy while preserving correctness and auditability.
+
+Next chapter: Memory Engine.
