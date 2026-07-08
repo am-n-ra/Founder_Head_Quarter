@@ -1,55 +1,55 @@
 # FounderOS V4
 
 ## Chapter 1 - Vision
-FounderOS is a venture operating system built around engines, durable memory and environment abstraction.
-
-## Principles
-- Engine-first architecture
-- Git-native persistence
-- Capability abstraction (Git, GitHub, MCP, SSH, Filesystem)
-- OODA before execution
-- Knowledge graph over flat memory
-- Durable decisions
-- Modular extensions
-
-## Kernel
-- Memory Engine
-- Knowledge Graph Engine
-- OODA Engine
-- Decision Engine
-- Venture Engine
-- Planning Engine
-- Task Engine
-- Research Engine
-- Collaboration Engine
-- Execution Engine
+FounderOS is a venture operating system built around engines.
 
 ## Chapter 2 - Runtime & Capability Layer
-FounderOS never assumes a fixed execution environment.
+Environment capabilities are detected dynamically.
 
 ## Chapter 3 - Memory Engine
-The Memory Engine is the persistent cognitive substrate of FounderOS.
+The Memory Engine manages durable knowledge.
 
-### Objectives
-- Preserve knowledge across sessions.
-- Separate transient context from durable facts.
-- Record decisions and their rationale.
-- Track venture evolution over time.
+## Chapter 4 - Knowledge Graph Engine
+The Knowledge Graph is the structural brain of FounderOS.
 
-### Memory Layers
-- Working Memory: current execution context.
-- Episodic Memory: events, meetings, conversations and milestones.
-- Semantic Memory: stable knowledge about the venture, products, users and technology.
-- Procedural Memory: workflows, playbooks, operating procedures and skills.
-- Decision Memory: every strategic decision with assumptions, alternatives and outcomes.
+### Purpose
+Instead of storing isolated notes, FounderOS models ventures as an interconnected graph.
 
-### Memory Objects
-Each memory object owns an identifier, timestamps, provenance, confidence score, relationships and lifecycle state.
+### Core Node Types
+- Venture
+- Product
+- Project
+- Team
+- Person
+- Customer
+- Investor
+- Feature
+- Decision
+- Objective
+- Key Result
+- Experiment
+- Risk
+- Opportunity
+- Metric
+- Market
+- Competitor
+- Technology
+- Asset
+- Document
 
-### Lifecycle
-Capture → Validate → Link → Persist → Retrieve → Archive.
+### Relationships
+Nodes are connected through typed relationships such as DEPENDS_ON, VALIDATES, BLOCKS, IMPLEMENTS, OWNS, MEASURES, FUNDS, SUPPORTS and DERIVES_FROM.
 
-### Retrieval
-Retrieval is semantic, graph-aware and recency-aware instead of relying only on keyword search.
+### Graph Operations
+- Link
+- Traverse
+- Cluster
+- Explain
+- Trace decisions
+- Detect orphan knowledge
+- Discover opportunities
 
-Next chapter: Knowledge Graph Engine.
+### Invariants
+Every durable decision, project, customer, feature and strategic objective should be represented as graph entities rather than isolated text.
+
+Next chapter: OODA Engine.
