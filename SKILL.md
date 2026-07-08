@@ -1,9 +1,27 @@
 # FounderOS V4
 
-## Bootstrap Test
+## Chapter 1 - Vision
+FounderOS is a venture operating system built around engines, durable memory and environment abstraction.
 
-This is a minimal update to verify write access on branch FHQ4.
+## Principles
+- Engine-first architecture
+- Git-native persistence
+- Capability abstraction (Git, GitHub, MCP, SSH, Filesystem)
+- OODA before execution
+- Knowledge graph over flat memory
+- Durable decisions
+- Modular extensions
 
-- GitHub write: OK
-- Branch: FHQ4
-- Next step: progressive SKILL expansion
+## Kernel
+- Memory Engine
+- Knowledge Graph Engine
+- OODA Engine
+- Decision Engine
+- Venture Engine
+- Planning Engine
+- Task Engine
+- Research Engine
+- Collaboration Engine
+- Execution Engine
+
+Further chapters will extend this document until FHQ3 is fully superseded.
