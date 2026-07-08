@@ -1,55 +1,44 @@
 # FounderOS V4
 
 ## Chapter 1 - Vision
-FounderOS is a venture operating system built around engines.
+...
 
-## Chapter 2 - Runtime & Capability Layer
-Environment capabilities are detected dynamically.
-
-## Chapter 3 - Memory Engine
-Persistent multi-layer memory.
-
-## Chapter 4 - Knowledge Graph Engine
-Graph-native venture representation.
-
-## Chapter 5 - OODA Engine
-Observe → Orient → Decide → Act.
-
-## Chapter 6 - Decision Engine
-The Decision Engine transforms observations into explainable strategic decisions.
+## Chapter 7 - Planning Engine
+The Planning Engine converts strategic decisions into executable plans.
 
 ### Responsibilities
-- Generate candidate strategies.
-- Evaluate trade-offs.
-- Quantify uncertainty.
-- Estimate expected impact.
-- Detect conflicting objectives.
-- Recommend the best action.
+- Decompose objectives into milestones.
+- Build dependency graphs.
+- Allocate resources.
+- Define success metrics.
+- Produce execution roadmaps.
+- Detect blockers.
+- Re-plan when assumptions change.
 
-### Decision Protocol
-1. Define objective.
-2. Enumerate feasible options.
-3. Gather supporting evidence.
-4. Score alternatives.
-5. Estimate risks.
-6. Select strategy.
-7. Record rationale.
-8. Schedule review.
+### Planning Hierarchy
+Vision
+→ Strategic Objectives
+→ Initiatives
+→ Projects
+→ Milestones
+→ Tasks
+→ Actions
 
-### Evaluation Dimensions
-- Strategic alignment
-- Expected value
-- Cost
-- Time
-- Risk
-- Reversibility
-- Confidence
-- Learning potential
+### Planning Principles
+- Outcome-first
+- Dependency-aware
+- Iterative
+- Risk-driven
+- Continuously re-planned
 
-### Decision Records
-Every decision becomes a first-class graph entity linked to objectives, assumptions, evidence, execution and observed outcomes.
+### Outputs
+- Execution roadmap
+- Critical path
+- Milestone schedule
+- Resource allocation
+- Success metrics
+- Review cadence
 
-### Review Loop
-Major decisions remain revisitable as new evidence appears.
+Planning outputs become inputs for the Task Engine and Execution Engine.
 
-Next chapter: Planning Engine.
+Next chapter: Task Engine.
