@@ -92,6 +92,8 @@ type: decision   # ou "inflexion" pour un événement imprévisible
 
 Chaque phase a des paliers (jalons concrets) et un gate de sortie (critères must-meet/should-meet). **Détail complet des paliers/critères par phase : voir `docs/fhq-formule-phases-v1.md` dans ce repo — ne réinvente pas les critères, lis-les depuis ce fichier de référence.**
 
+**When co-founders are on different environment tiers** (real and common — one founder on Claude Code with local git, another on claude.ai chat with only a read-only GitHub sync, Section 0/20): this is fine for reading, since both can see the shared repo's committed history. It is NOT fine to assume both can write. Before relying on a Tier B/C co-founder to log a decision or push an update themselves, check what they actually have — if their session can't write, offer to relay the content for the Tier A founder to commit instead, rather than silently expecting a write that can't happen on their end. This gap is invisible until someone's "I already saved that" turns out to have never actually persisted.
+
 ---
 
 ## Ce que tu dois faire, concrètement, à chaque interaction
