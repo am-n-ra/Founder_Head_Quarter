@@ -1,9 +1,0 @@
-# Ignore session state
-**/hot.md
-
-# Never expose personal founder profile in shared venture
-**/founder-profile.yaml
-
-# OS files
-.DS_Store
-Thumbs.db
